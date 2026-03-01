@@ -8,7 +8,7 @@ const skillGroups = [
   {
     category: '前端開發',
     icon: '🎨',
-    items: ['Vue.js 3', 'TypeScript', 'Vite', 'HTML / CSS'],
+    items: ['Vue 3', 'TypeScript', 'Vite', 'HTML / CSS'],
   },
   {
     category: '工具 & 其他',

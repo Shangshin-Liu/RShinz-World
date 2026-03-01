@@ -9,7 +9,7 @@ const currentYear = new Date().getFullYear()
         <span class="logo-bracket">&lt;</span>阿星<span class="logo-bracket">/&gt;</span>
       </span>
       <p class="copy">© {{ currentYear }} RShinz. All rights reserved.</p>
-      <p class="built-with">Built with Vue 3 + Vite</p>
+      <p class="built-with">Built with Vue 3 + Vite. Designed by Vibe Coding.</p>
     </div>
   </footer>
 </template>

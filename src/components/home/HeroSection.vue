@@ -101,8 +101,8 @@ const codeExamples: Record<TabId, { filename: string; lines: CodeLine[] }> = {
           <span class="grad-text">阿星</span>
         </h1>
         <p class="hero-desc">
-          10 年以上 C#/.NET 開發經歷，協助過各產業客戶打造企業系統，
-          同時熱衷 Vue.js 開發與技術知識的傳遞。
+          自 2014 年深耕 C#/.NET 開發至今，曾協助跨產業客戶打造包含倉儲、餐飲、會員及數據收集等多元系統。<br />
+          除了專注於分散式架構設計與全端開發，我也熱衷於探索及學習新技能，並持續分享實戰經驗與程式指導。
         </p>
         <div class="hero-cta">
           <RouterLink to="/blog" class="btn btn-primary">閱讀文章</RouterLink>
@@ -116,8 +116,8 @@ const codeExamples: Record<TabId, { filename: string; lines: CodeLine[] }> = {
             <span class="stat-label">年經驗</span>
           </div>
           <div class="stat-pill glass">
-            <span class="stat-num grad-text">多</span>
-            <span class="stat-label">產業專案</span>
+            <span class="stat-num grad-text">分散式系統</span>
+            <span class="stat-label">專案架構開發</span>
           </div>
           <div class="stat-pill glass">
             <span class="stat-num grad-text">全</span>
