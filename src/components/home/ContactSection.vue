@@ -10,7 +10,12 @@ const email = 'soup1597@gmail.com'
 
       <a :href="`mailto:${email}`" class="contact-card glass">
         <div class="card-glow" />
-        <div class="icon-wrap">✉️</div>
+        <div class="icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="email-svg">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <polyline points="2,4 12,13 22,4" />
+            </svg>
+          </div>
         <div class="text">
           <p class="contact-label">電子郵件</p>
           <p class="contact-value">{{ email }}</p>
@@ -61,6 +66,15 @@ const email = 'soup1597@gmail.com'
 .icon-wrap {
   font-size: 1.75rem;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.email-svg {
+  width: 2rem;
+  height: 2rem;
+  color: var(--accent);
 }
 
 .text {
