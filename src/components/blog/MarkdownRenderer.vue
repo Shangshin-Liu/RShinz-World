@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
@@ -17,12 +17,21 @@ marked.use(
   }),
 )
 
+// 將 basePath 各段 encode（處理資料夾名稱含空格的情況）
+const encodedBase = computed(() =>
+  props.basePath
+    ?.split('/')
+    .map((seg) => encodeURIComponent(seg))
+    .join('/') ?? '',
+)
+
 // 將 content.md 中相對路徑的圖片換成 Vite 可存取的路徑
 const processedContent = computed(() => {
   if (!props.basePath || !props.content) return props.content
   return props.content.replace(
     /!\[([^\]]*)\]\(assets\/([^)]+)\)/g,
-    (_, alt, file) => `![${alt}](${import.meta.env.BASE_URL}posts/${props.basePath}/assets/${file})`,
+    (_, alt, file) =>
+      `![${alt}](${import.meta.env.BASE_URL}posts/${encodedBase.value}/assets/${encodeURIComponent(file)})`,
   )
 })
 

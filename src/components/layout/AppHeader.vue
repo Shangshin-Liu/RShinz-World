@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const isMenuOpen = ref(false)
 const isScrolled = ref(false)
 const route = useRoute()
+const router = useRouter()
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value
@@ -16,6 +17,19 @@ function closeMenu() {
 
 function onScroll() {
   isScrolled.value = window.scrollY > 20
+}
+
+function scrollToSection(id: string) {
+  closeMenu()
+  const doScroll = () => {
+    const el = document.getElementById(id)
+    el?.scrollIntoView({ behavior: 'smooth' })
+  }
+  if (route.path !== '/') {
+    router.push('/').then(() => setTimeout(doScroll, 150))
+  } else {
+    doScroll()
+  }
 }
 
 onMounted(() => window.addEventListener('scroll', onScroll))
@@ -35,10 +49,10 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
           <RouterLink to="/" :class="{ active: route.path === '/' }">首頁</RouterLink>
         </li>
         <li>
-          <a href="/#about">關於我</a>
+          <button class="nav-btn" @click="scrollToSection('about')">關於我</button>
         </li>
         <li>
-          <a href="/#skills">技能</a>
+          <button class="nav-btn" @click="scrollToSection('skills')">技能</button>
         </li>
         <li>
           <RouterLink to="/blog" :class="{ active: route.path.startsWith('/blog') }">
@@ -46,7 +60,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
           </RouterLink>
         </li>
         <li>
-          <a href="/#contact" class="btn btn-primary nav-cta">聯絡我</a>
+          <button class="btn btn-primary nav-cta" @click="scrollToSection('contact')">聯絡我</button>
         </li>
       </ul>
 
@@ -60,10 +74,10 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
     <div class="mobile-menu" :class="{ open: isMenuOpen }">
       <ul>
         <li><RouterLink to="/" @click="closeMenu">首頁</RouterLink></li>
-        <li><a href="/#about" @click="closeMenu">關於我</a></li>
-        <li><a href="/#skills" @click="closeMenu">技能</a></li>
+        <li><button class="nav-btn" @click="scrollToSection('about')">關於我</button></li>
+        <li><button class="nav-btn" @click="scrollToSection('skills')">技能</button></li>
         <li><RouterLink to="/blog" @click="closeMenu">文章</RouterLink></li>
-        <li><a href="/#contact" @click="closeMenu">聯絡我</a></li>
+        <li><button class="nav-btn" @click="scrollToSection('contact')">聯絡我</button></li>
       </ul>
     </div>
   </header>
@@ -112,14 +126,21 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   list-style: none;
 }
 
-.nav-links a {
+.nav-links a,
+.nav-btn {
   color: var(--text-secondary);
   font-size: 0.9rem;
   transition: color var(--transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-body);
 }
 
 .nav-links a:hover,
-.nav-links a.active {
+.nav-links a.active,
+.nav-btn:hover {
   color: var(--text-primary);
 }
 
