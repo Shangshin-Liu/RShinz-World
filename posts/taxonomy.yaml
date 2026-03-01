@@ -1,0 +1,69 @@
+# ============================================================
+# 部落格分類與標籤字典
+# 新增分類／標籤：在對應區塊加一個代號即可
+# 文章 attributes.yaml 使用 category/tags 填入「代號」引用
+# ============================================================
+
+categories:
+  # --- 技術 ---
+  tech:
+    label: "技術筆記"
+  tutorial:
+    label: "教學文章"
+  architecture:
+    label: "系統架構"
+  devops:
+    label: "DevOps"
+  # --- 非技術 ---
+  life:
+    label: "生活隨筆"
+  career:
+    label: "職涯心得"
+  # --- 其他 ---
+  test:
+    label: "測試"
+
+tags:
+  # --- 語言 ---
+  csharp:
+    label: "C#"
+  dotnet:
+    label: ".NET"
+  sql:
+    label: "SQL"
+  javascript:
+    label: "JavaScript"
+  typescript:
+    label: "TypeScript"
+  # --- 框架 / 工具 ---
+  vue:
+    label: "Vue.js"
+  aspnet:
+    label: "ASP.NET"
+  ef:
+    label: "Entity Framework"
+  git:
+    label: "Git"
+  docker:
+    label: "Docker"
+  # --- 資料庫 ---
+  sqlserver:
+    label: "SQL Server"
+  postgresql:
+    label: "PostgreSQL"
+  redis:
+    label: "Redis"
+  # --- 架構 / 概念 ---
+  ddd:
+    label: "DDD"
+  microservice:
+    label: "微服務"
+  clean-arch:
+    label: "Clean Architecture"
+  api:
+    label: "API 設計"
+  # --- 其他 ---
+  test:
+    label: "測試"
+  article:
+    label: "文章"

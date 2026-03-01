@@ -1,8 +1,35 @@
 import { ref, computed } from 'vue'
 import yaml from 'js-yaml'
-import type { Post, PostAttributes } from '@/types'
+import type { Post, RawPostAttributes, Taxonomy, TaxonomyItem } from '@/types'
 
-// Build-time glob — Vite 打包時掃描所有 attributes.yaml 與 content.md
+// ── 1. 載入 taxonomy ──────────────────────────────────────────
+const taxonomyModules = import.meta.glob('/posts/taxonomy.yaml', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+}) as Record<string, string>
+
+const _rawTaxonomy = yaml.load(
+    Object.values(taxonomyModules)[0] ?? 'categories: {}\ntags: {}'
+) as Taxonomy
+
+/** 將 taxonomy 的 key 建成 { id, label }[] */
+function buildItems(map: Record<string, { label: string }>): TaxonomyItem[] {
+    return Object.entries(map).map(([id, { label }]) => ({ id, label }))
+}
+
+export const taxonomyCategories: TaxonomyItem[] = buildItems(_rawTaxonomy.categories ?? {})
+export const taxonomyTags: TaxonomyItem[] = buildItems(_rawTaxonomy.tags ?? {})
+
+/** 代號 → 顯示名稱（找不到時 fallback 為代號本身）*/
+function resolveCategory(id: string): string {
+    return _rawTaxonomy.categories?.[id]?.label ?? id
+}
+function resolveTag(id: string): string {
+    return _rawTaxonomy.tags?.[id]?.label ?? id
+}
+
+// ── 2. 載入文章 ───────────────────────────────────────────────
 const attrModules = import.meta.glob('/posts/**/attributes.yaml', {
     query: '?raw',
     import: 'default',
@@ -16,7 +43,6 @@ const contentModules = import.meta.glob('/posts/**/content.md', {
 }) as Record<string, string>
 
 function parseSlug(path: string): string {
-    // /posts/{slug}/attributes.yaml → {slug}
     const match = path.match(/\/posts\/(.+)\/attributes\.yaml$/)
     return match ? match[1] : path
 }
@@ -26,13 +52,24 @@ function buildPosts(): Post[] {
         .map(([attrPath, attrRaw]) => {
             const slug = parseSlug(attrPath)
             const contentPath = `/posts/${slug}/content.md`
-            const attributes = yaml.load(attrRaw) as PostAttributes
+            const raw = yaml.load(attrRaw) as RawPostAttributes
+
+            const categoryId = raw.category ?? ''
+            const tagIds = raw.tags ?? []
 
             return {
                 slug,
                 attributes: {
-                    ...attributes,
-                    tags: attributes.tags ?? [],
+                    title: raw.title,
+                    date: raw.date,
+                    description: raw.description,
+                    cover: raw.cover,
+                    // 代號
+                    categoryId,
+                    tagIds,
+                    // 顯示名稱（由 taxonomy 解析）
+                    category: resolveCategory(categoryId),
+                    tags: tagIds.map(resolveTag),
                 },
                 content: contentModules[contentPath] ?? '',
             }
@@ -42,21 +79,22 @@ function buildPosts(): Post[] {
 
 const _posts = buildPosts()
 
+// ── 3. Composable ─────────────────────────────────────────────
 export function usePosts() {
     const searchQuery = ref('')
-    const activeTag = ref('')
-    const activeCategory = ref('')
+    const activeTag = ref('')        // 以 label 過濾
+    const activeCategory = ref('')   // 以 label 過濾
 
     const allTags = computed(() => {
-        const tagSet = new Set<string>()
-        _posts.forEach((p) => p.attributes.tags.forEach((t) => tagSet.add(t)))
-        return [...tagSet]
+        const seen = new Set<string>()
+        _posts.forEach((p) => p.attributes.tags.forEach((t) => seen.add(t)))
+        return [...seen]
     })
 
     const allCategories = computed(() => {
-        const catSet = new Set<string>()
-        _posts.forEach((p) => catSet.add(p.attributes.category))
-        return [...catSet]
+        const seen = new Set<string>()
+        _posts.forEach((p) => seen.add(p.attributes.category))
+        return [...seen]
     })
 
     const filteredPosts = computed(() => {
