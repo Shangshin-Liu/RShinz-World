@@ -7,24 +7,13 @@ const isScrolled = ref(false)
 const route = useRoute()
 const router = useRouter()
 
-function toggleMenu() {
-  isMenuOpen.value = !isMenuOpen.value
-}
-
-function closeMenu() {
-  isMenuOpen.value = false
-}
-
-function onScroll() {
-  isScrolled.value = window.scrollY > 20
-}
+function toggleMenu() { isMenuOpen.value = !isMenuOpen.value }
+function closeMenu() { isMenuOpen.value = false }
+function onScroll() { isScrolled.value = window.scrollY > 20 }
 
 function scrollToSection(id: string) {
   closeMenu()
-  const doScroll = () => {
-    const el = document.getElementById(id)
-    el?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const doScroll = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   if (route.path !== '/') {
     router.push('/').then(() => setTimeout(doScroll, 150))
   } else {
@@ -43,34 +32,19 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         <span class="logo-bracket">&lt;</span>阿星<span class="logo-bracket">/&gt;</span>
       </RouterLink>
 
-      <!-- Desktop links -->
       <ul class="nav-links">
-        <li>
-          <RouterLink to="/" :class="{ active: route.path === '/' }">首頁</RouterLink>
-        </li>
-        <li>
-          <button class="nav-btn" @click="scrollToSection('about')">關於我</button>
-        </li>
-        <li>
-          <button class="nav-btn" @click="scrollToSection('skills')">技能</button>
-        </li>
-        <li>
-          <RouterLink to="/blog" :class="{ active: route.path.startsWith('/blog') }">
-            文章
-          </RouterLink>
-        </li>
-        <li>
-          <button class="btn btn-primary nav-cta" @click="scrollToSection('contact')">聯絡我</button>
-        </li>
+        <li><RouterLink to="/" :class="{ active: route.path === '/' }">首頁</RouterLink></li>
+        <li><button class="nav-btn" @click="scrollToSection('about')">關於我</button></li>
+        <li><button class="nav-btn" @click="scrollToSection('skills')">技能</button></li>
+        <li><RouterLink to="/blog" :class="{ active: route.path.startsWith('/blog') }">文章</RouterLink></li>
+        <li><button class="btn btn-primary nav-cta" @click="scrollToSection('contact')">聯絡我</button></li>
       </ul>
 
-      <!-- Mobile hamburger -->
       <button class="hamburger" :class="{ open: isMenuOpen }" @click="toggleMenu" aria-label="開啟選單">
         <span /><span /><span />
       </button>
     </nav>
 
-    <!-- Mobile menu -->
     <div class="mobile-menu" :class="{ open: isMenuOpen }">
       <ul>
         <li><RouterLink to="/" @click="closeMenu">首頁</RouterLink></li>
@@ -90,15 +64,16 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   left: 0;
   right: 0;
   z-index: 100;
-  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+  transition: all var(--transition);
   border-bottom: 1px solid transparent;
 }
 
 .app-header.scrolled {
-  background: rgba(13, 17, 23, 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(8, 11, 18, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-color: var(--border);
-  box-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 24px rgba(0,0,0,0.5);
 }
 
 .nav {
@@ -110,13 +85,16 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 .logo {
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
 }
 
 .logo-bracket {
-  color: var(--accent);
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav-links {
@@ -129,7 +107,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .nav-links a,
 .nav-btn {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
   transition: color var(--transition);
   background: none;
   border: none;
@@ -145,12 +124,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 
 .nav-cta {
+  padding: 0.42rem 1.1rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
   color: #fff !important;
-  padding: 0.45rem 1.1rem !important;
-  font-size: 0.85rem !important;
 }
 
-/* Hamburger */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -174,19 +153,17 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .hamburger.open span:nth-child(2) { opacity: 0; }
 .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* Mobile menu */
 .mobile-menu {
   display: none;
-  background: var(--bg-surface);
+  background: rgba(8,11,18,0.9);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   overflow: hidden;
   max-height: 0;
   transition: max-height var(--transition-slow);
 }
 
-.mobile-menu.open {
-  max-height: 300px;
-}
+.mobile-menu.open { max-height: 300px; }
 
 .mobile-menu ul {
   list-style: none;
@@ -196,9 +173,14 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   gap: 1rem;
 }
 
-.mobile-menu a {
+.mobile-menu a,
+.mobile-menu .nav-btn {
   color: var(--text-secondary);
   font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
 }
 
 @media (max-width: 768px) {
