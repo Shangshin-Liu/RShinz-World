@@ -1,12 +1,76 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import avatarSrc from '@/assets/images/avatar.png'
 
 const router = useRouter()
 function scrollToAbout() {
   const el = document.getElementById('about')
   if (el) el.scrollIntoView({ behavior: 'smooth' })
   else router.push('/').then(() => setTimeout(() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }), 150))
+}
+
+// ── 互動 Code Card ────────────────────────────────────────────
+type TabId = 'csharp' | 'javascript' | 'sql'
+type Token = { cls?: string; text: string }
+type CodeLine = { tokens: Token[]; indent?: 0 | 1 | 2 | 3 }
+
+const activeTab = ref<TabId>('csharp')
+
+interface ChipDef { id: TabId; icon: string; label: string; cls: string }
+const chips: ChipDef[] = [
+  { id: 'csharp',     icon: '🦾', label: 'C# .NET',    cls: 'chip-1' },
+  { id: 'javascript', icon: '⚡', label: 'JavaScript', cls: 'chip-2' },
+  { id: 'sql',        icon: '🗄️', label: 'SQL',        cls: 'chip-3' },
+]
+
+const codeExamples: Record<TabId, { filename: string; lines: CodeLine[] }> = {
+  csharp: {
+    filename: 'DeveloperService.cs',
+    lines: [
+      { tokens: [{ cls: 'kw', text: 'public class' }, { text: ' ' }, { cls: 'fn', text: 'DeveloperService' }] },
+      { tokens: [{ text: '{' }] },
+      { indent: 1, tokens: [{ cls: 'kw', text: 'private readonly string' }, { text: ' ' }, { cls: 'str', text: '_name' }, { text: ' = ' }, { cls: 'val', text: '"RShinz"' }, { text: ';' }] },
+      { indent: 1, tokens: [{ cls: 'kw', text: 'private readonly int' }, { text: '    ' }, { cls: 'str', text: '_exp' }, { text: '  = ' }, { cls: 'val', text: '10' }, { text: ';' }] },
+      { tokens: [{ text: '' }] },
+      { indent: 1, tokens: [{ cls: 'kw', text: 'public' }, { text: ' ' }, { cls: 'fn', text: 'IEnumerable' }, { text: '<' }, { cls: 'kw', text: 'string' }, { text: '>' }] },
+      { indent: 2, tokens: [{ cls: 'fn', text: 'GetSkills' }, { text: '() => [' }] },
+      { indent: 3, tokens: [{ cls: 'val', text: '"C# / .NET"' }, { text: ',' }] },
+      { indent: 3, tokens: [{ cls: 'val', text: '"SQL Server"' }, { text: ',' }] },
+      { indent: 3, tokens: [{ cls: 'val', text: '"Vue.js"' }, { text: ',' }] },
+      { indent: 2, tokens: [{ text: '];' }] },
+      { tokens: [{ text: '}' }] },
+    ],
+  },
+  javascript: {
+    filename: 'developer.js',
+    lines: [
+      { tokens: [{ cls: 'kw', text: 'const' }, { text: ' ' }, { cls: 'fn', text: 'developer' }, { text: ' = {' }] },
+      { indent: 1, tokens: [{ cls: 'str', text: 'name' }, { text: ': ' }, { cls: 'val', text: "'RShinz'" }, { text: ',' }] },
+      { indent: 1, tokens: [{ cls: 'str', text: 'lang' }, { text: ': ' }, { cls: 'val', text: "'JavaScript'" }, { text: ',' }] },
+      { indent: 1, tokens: [{ cls: 'str', text: 'runtime' }, { text: ': ' }, { cls: 'val', text: "'Node.js'" }, { text: ',' }] },
+      { indent: 1, tokens: [{ cls: 'fn', text: 'async' }, { text: ' ' }, { cls: 'fn', text: 'fetchSkills' }, { text: '() {' }] },
+      { indent: 2, tokens: [{ cls: 'kw', text: 'const' }, { text: ' res = ' }, { cls: 'kw', text: 'await' }] },
+      { indent: 3, tokens: [{ cls: 'fn', text: 'api' }, { text: '.' }, { cls: 'fn', text: 'get' }, { text: '(' }, { cls: 'val', text: "'/skills'" }, { text: ')' }] },
+      { indent: 2, tokens: [{ cls: 'kw', text: 'return' }, { text: ' res.' }, { cls: 'str', text: 'data' }] },
+      { indent: 1, tokens: [{ text: '},' }] },
+      { tokens: [{ text: '}' }] },
+    ],
+  },
+  sql: {
+    filename: 'skills_query.sql',
+    lines: [
+      { tokens: [{ cls: 'kw', text: 'SELECT' }] },
+      { indent: 1, tokens: [{ cls: 'str', text: 'e.name' }, { text: ',' }] },
+      { indent: 1, tokens: [{ cls: 'fn', text: 'COUNT' }, { text: '(' }, { cls: 'str', text: 'p.id' }, { text: ')  ' }, { cls: 'kw', text: 'AS' }, { text: ' ' }, { cls: 'fn', text: 'projects' }, { text: ',' }] },
+      { indent: 1, tokens: [{ cls: 'fn', text: 'AVG' }, { text: '(' }, { cls: 'str', text: 'r.score' }, { text: ') ' }, { cls: 'kw', text: 'AS' }, { text: ' ' }, { cls: 'fn', text: 'avg_rating' }] },
+      { tokens: [{ cls: 'kw', text: 'FROM' }, { text: '  ' }, { cls: 'str', text: 'engineers' }, { text: ' ' }, { cls: 'fn', text: 'e' }] },
+      { tokens: [{ cls: 'kw', text: 'JOIN' }, { text: '  ' }, { cls: 'str', text: 'projects' }, { text: '  ' }, { cls: 'fn', text: 'p' }, { text: ' ' }, { cls: 'kw', text: 'ON' }, { text: ' p.owner = e.id' }] },
+      { tokens: [{ cls: 'kw', text: 'JOIN' }, { text: '  ' }, { cls: 'str', text: 'reviews' }, { text: '   ' }, { cls: 'fn', text: 'r' }, { text: ' ' }, { cls: 'kw', text: 'ON' }, { text: ' r.project = p.id' }] },
+      { tokens: [{ cls: 'kw', text: 'WHERE' }, { text: ' ' }, { cls: 'str', text: 'e.name' }, { text: ' = ' }, { cls: 'val', text: "'RShinz'" }] },
+      { tokens: [{ cls: 'kw', text: 'GROUP BY' }, { text: ' ' }, { cls: 'str', text: 'e.name' }] },
+    ],
+  },
 }
 </script>
 
@@ -18,11 +82,20 @@ function scrollToAbout() {
     <div class="orb orb-3" aria-hidden="true" />
 
     <div class="container hero-inner">
+      <!-- ── Left ──────────────────────────────────── -->
       <div class="hero-content fade-in-up">
-        <div class="hero-eyebrow">
-          <span class="eyebrow-dot" />
-          <span>後端工程師 · 技術分享者</span>
+
+        <!-- Avatar + eyebrow in one row -->
+        <div class="hero-intro">
+          <div class="avatar-ring">
+            <img :src="avatarSrc" alt="阿星的個人照片" class="avatar-img" />
+          </div>
+          <div class="hero-eyebrow">
+            <span class="eyebrow-dot" />
+            <span>後端工程師 · 技術分享者</span>
+          </div>
         </div>
+
         <h1 class="hero-name">
           Hi，我是<br />
           <span class="grad-text">阿星</span>
@@ -53,32 +126,43 @@ function scrollToAbout() {
         </div>
       </div>
 
-      <div class="hero-visual" aria-hidden="true">
+      <!-- ── Right: code card + floating chip buttons ── -->
+      <div class="hero-visual" aria-hidden="false">
         <div class="code-card glass">
           <div class="code-card-header">
             <span class="dot red" /><span class="dot yellow" /><span class="dot green" />
-            <span class="code-filename">DeveloperService.cs</span>
+            <span class="code-filename">{{ codeExamples[activeTab].filename }}</span>
           </div>
           <div class="code-body">
-            <div class="code-line"><span class="kw">public class</span> <span class="fn">DeveloperService</span></div>
-            <div class="code-line">{</div>
-            <div class="code-line indent"><span class="kw">private readonly string</span> <span class="str">_name</span> = <span class="val">&quot;RShinz&quot;</span>;</div>
-            <div class="code-line indent"><span class="kw">private readonly int</span> <span class="str">_exp</span> = <span class="val">10</span>;</div>
-            <div class="code-line">&nbsp;</div>
-            <div class="code-line indent"><span class="kw">public</span> <span class="fn">IEnumerable</span>&lt;<span class="kw">string</span>&gt;</div>
-            <div class="code-line indent2"><span class="fn">GetSkills</span>() =&gt; [</div>
-            <div class="code-line indent3"><span class="val">&quot;C# / .NET&quot;</span>,</div>
-            <div class="code-line indent3"><span class="val">&quot;SQL Server&quot;</span>,</div>
-            <div class="code-line indent3"><span class="val">&quot;Vue.js&quot;</span>,</div>
-            <div class="code-line indent2">];</div>
-            <div class="code-line">}</div>
+            <Transition name="code-fade" mode="out-in">
+              <div :key="activeTab" class="code-lines">
+                <div
+                  v-for="(line, i) in codeExamples[activeTab].lines"
+                  :key="i"
+                  :class="['code-line', line.indent ? `indent${line.indent}` : '']"
+                >
+                  <span
+                    v-for="(tok, j) in line.tokens"
+                    :key="j"
+                    :class="tok.cls"
+                  >{{ tok.text }}</span>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
 
-        <!-- floating chips -->
-        <div class="chip chip-1 glass">⚡ Vue 3</div>
-        <div class="chip chip-2 glass">🦾 C# .NET</div>
-        <div class="chip chip-3 glass">🗄️ SQL Server</div>
+        <!-- Floating chip buttons -->
+        <button
+          v-for="chip in chips"
+          :key="chip.id"
+          class="chip glass"
+          :class="[chip.cls, { active: activeTab === chip.id }]"
+          @click="activeTab = chip.id"
+        >
+          <span>{{ chip.icon }}</span>
+          <span>{{ chip.label }}</span>
+        </button>
       </div>
     </div>
 
@@ -101,40 +185,12 @@ function scrollToAbout() {
 }
 
 /* Aurora orbs */
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+.orb-1 { width: 600px; height: 600px; background: rgba(96,165,250,0.1);  top:-100px; right:-100px; animation: float 10s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; background: rgba(168,85,247,0.12); bottom:0;   left:-80px;  animation: float 14s ease-in-out infinite reverse; }
+.orb-3 { width: 250px; height: 250px; background: rgba(96,165,250,0.07); bottom:30%; right:35%;   animation: float 8s ease-in-out infinite 2s; }
 
-.orb-1 {
-  width: 600px;
-  height: 600px;
-  background: rgba(96, 165, 250, 0.1);
-  top: -100px;
-  right: -100px;
-  animation: float 10s ease-in-out infinite;
-}
-
-.orb-2 {
-  width: 400px;
-  height: 400px;
-  background: rgba(168, 85, 247, 0.12);
-  bottom: 0;
-  left: -80px;
-  animation: float 14s ease-in-out infinite reverse;
-}
-
-.orb-3 {
-  width: 250px;
-  height: 250px;
-  background: rgba(96, 165, 250, 0.07);
-  bottom: 30%;
-  right: 35%;
-  animation: float 8s ease-in-out infinite 2s;
-}
-
+/* Grid */
 .hero-inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -146,7 +202,32 @@ function scrollToAbout() {
   z-index: 1;
 }
 
-/* Left */
+/* ── Left ─────────────────────────────────────── */
+
+/* Avatar + eyebrow on same row */
+.hero-intro {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.avatar-ring {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  padding: 2px;
+  background: var(--grad);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 2px solid var(--bg-base);
+}
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -154,17 +235,14 @@ function scrollToAbout() {
   background: var(--grad-glow);
   border: 1px solid var(--border-glow);
   border-radius: var(--radius-full);
-  padding: 0.35rem 0.9rem;
-  font-size: 0.78rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
   color: var(--accent);
   font-weight: 500;
-  margin-bottom: 1.25rem;
   backdrop-filter: blur(8px);
 }
-
 .eyebrow-dot {
-  width: 7px;
-  height: 7px;
+  width: 7px; height: 7px;
   background: var(--accent);
   border-radius: 50%;
   animation: pulse-glow 2.5s ease-in-out infinite;
@@ -175,65 +253,48 @@ function scrollToAbout() {
   font-weight: 900;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
-
 .hero-desc {
   font-size: 1rem;
   color: var(--text-secondary);
   line-height: 1.85;
   max-width: 480px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
-
 .hero-cta {
   display: flex;
   gap: 0.85rem;
   flex-wrap: wrap;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
-
 .hero-stats {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
-
 .stat-pill {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.6rem 1.1rem;
+  padding: 0.55rem 1rem;
   border-radius: var(--radius-lg);
   gap: 0.1rem;
-  min-width: 72px;
+  min-width: 68px;
 }
+.stat-num   { font-size: 1.2rem; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
 
-.stat-num {
-  font-size: 1.3rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-/* Right - code card */
-.hero-visual {
-  position: relative;
-}
+/* ── Right ─────────────────────────────────────── */
+.hero-visual { position: relative; }
 
 .code-card {
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(96,165,250,0.08),
-    0 24px 64px rgba(0, 0, 0, 0.5);
+    0 24px 64px rgba(0,0,0,0.5);
 }
-
 .code-card-header {
   display: flex;
   align-items: center;
@@ -242,63 +303,77 @@ function scrollToAbout() {
   border-bottom: 1px solid var(--border);
   background: rgba(0,0,0,0.2);
 }
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
+.dot { width: 10px; height: 10px; border-radius: 50%; }
 .dot.red    { background: #ff5f56; }
 .dot.yellow { background: #ffbd2e; }
 .dot.green  { background: #27c93f; }
-
 .code-filename {
   margin-left: 0.5rem;
   font-size: 0.75rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
 }
-
 .code-body {
   padding: 1.25rem 1.5rem;
   font-family: var(--font-mono);
   font-size: 0.83rem;
   line-height: 2;
+  min-height: 220px;
 }
-
-.code-line { color: var(--text-secondary); }
-.indent  { padding-left: 1.5rem; }
+.code-line  { color: var(--text-secondary); white-space: pre; }
+.indent1 { padding-left: 1.5rem; }
 .indent2 { padding-left: 3rem; }
 .indent3 { padding-left: 4.5rem; }
-.kw { color: #c792ea; }
-.fn { color: #82aaff; }
+.kw  { color: #c792ea; }
+.fn  { color: #82aaff; }
 .str { color: #89ddff; }
 .val { color: #c3e88d; }
 
-/* Floating chips */
+/* Code fade transition */
+.code-fade-enter-active,
+.code-fade-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.code-fade-enter-from   { opacity: 0; transform: translateY(6px); }
+.code-fade-leave-to     { opacity: 0; transform: translateY(-6px); }
+
+/* Floating chip buttons */
 .chip {
   position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-full);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+  user-select: none;
+}
+.chip:hover {
+  border-color: var(--border-glow);
+  color: var(--accent);
+}
+.chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.25);
 }
 
+/* Positions (floating around the card) */
 .chip-1 {
   top: -1rem;
   right: -1.5rem;
   animation: float 6s ease-in-out infinite;
 }
-
 .chip-2 {
   bottom: 3rem;
   left: -2rem;
   animation: float 8s ease-in-out infinite 1s;
 }
-
 .chip-3 {
   bottom: -1rem;
   right: 1rem;
@@ -319,14 +394,11 @@ function scrollToAbout() {
   font-size: 0.72rem;
   z-index: 1;
 }
-
 .scroll-line {
-  width: 1px;
-  height: 40px;
+  width: 1px; height: 40px;
   background: var(--grad);
   animation: scroll-line 2s ease-in-out infinite;
 }
-
 @keyframes scroll-line {
   0%   { transform: scaleY(0); transform-origin: top; }
   50%  { transform: scaleY(1); transform-origin: top; }
