@@ -74,7 +74,7 @@ function placeAndCapture(
 }
 
 // ── Board Config ──────────────────────────────────────────────────────
-const SIZES = [9, 13, 19] as const
+const SIZES = [9, 13] as const
 type BoardSize = typeof SIZES[number]
 
 const PAD  = 36
@@ -149,7 +149,6 @@ function changeSize(size: BoardSize) {
 const HOSHI: Record<BoardSize, [number, number][]> = {
   9:  [[2,2],[2,6],[4,4],[6,2],[6,6]],
   13: [[3,3],[3,9],[6,6],[9,3],[9,9]],
-  19: [[3,3],[3,9],[3,15],[9,3],[9,9],[9,15],[15,3],[15,9],[15,15]],
 }
 </script>
 
