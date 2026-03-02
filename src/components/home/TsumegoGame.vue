@@ -268,6 +268,58 @@ const TSUMEGO_PUZZLES: TsumegoData[] = [
         wrongMsg:'此處對白棋毫無影響，白棋仍有三口氣，應先在 (3,3) 開始縮氣。' },
     ],
   },
+
+  // ================================================================
+  // P4 — 撲與反提（2手）
+  // 測試目的：讓黑棋送吃一子（撲），白棋回應提走該子，視覺上最明顯。
+  //
+  // 盤面設定（9x9 左上角）：
+  //   白棋 U 形：(1,1) (1,2) (1,3) (2,1) (2,3) (3,1) (3,3)
+  //   內部空點：(2,2) 虎口，(3,2) 空點
+  //   外圍全被黑牆包死，因此白棋的氣只剩下內部的 (2,2) 與 (3,2)
+  //
+  // Step 1: 黑下 (2,2)「撲」，由於白棋還有 (3,2) 的氣，黑子合法。
+  //         白棋回應下 (3,2)，將剛落下的黑子 (2,2) 提走。（畫面上的黑子會消失）
+  // Step 2: 從畫面上消失的 (2,2) 變成白棋唯一的氣，黑棋下回 (2,2)，反提全體白棋。
+  // ================================================================
+  {
+    id: 4, title: '撲與反提', goal: '黑先殺',
+    levelLabel: '中級 2手', levelSteps: 2, boardSize: 9,
+    initialStones: [
+      // White U-shape block (7 stones)
+      { r:1, c:1, color:'white' }, { r:1, c:2, color:'white' }, { r:1, c:3, color:'white' },
+      { r:2, c:1, color:'white' },                              { r:2, c:3, color:'white' },
+      { r:3, c:1, color:'white' },                              { r:3, c:3, color:'white' },
+      // Black enclosure shutting all outside liberties
+      { r:0, c:1, color:'black' }, { r:0, c:2, color:'black' }, { r:0, c:3, color:'black' },
+      { r:1, c:0, color:'black' }, { r:2, c:0, color:'black' }, { r:3, c:0, color:'black' }, { r:4, c:1, color:'black' },
+      { r:1, c:4, color:'black' }, { r:2, c:4, color:'black' }, { r:3, c:4, color:'black' }, { r:4, c:3, color:'black' },
+      // Close bottom of the inner cavity
+      { r:4, c:2, color:'black' }
+    ],
+    firstChoices: [
+      {
+        r:2, c:2, isCorrect:true,
+        // White response: captures the newly played black stone at (2,2) by playing (3,2)
+        whiteReply: { r:3, c:2 },
+        successMsg: '',
+        nextChoices: [
+          // Black recaptures all white stones at the newly empty spot (2,2)
+          { r:2, c:2, isCorrect:true,
+            successMsg: '成功！這就是「撲」，白棋提走黑子後，黑棋能一舉反提全部白棋！' },
+          { r:5, c:5, isCorrect:false,
+            wrongMsg: '白全體只剩 (2,2) 一口氣，錯過機會就反被吃！' },
+          { r:0, c:4, isCorrect:false,
+            wrongMsg: '距離要點太遠。' },
+        ],
+      },
+      // If black starts at 3,2
+      { r:3, c:2, isCorrect:false,
+        wrongMsg:'下在此處不但無法叫吃白棋，反而讓白棋在 (2,2) 做出真眼。應利用 (2,2) 撲！' },
+      { r:8, c:8, isCorrect:false,
+        wrongMsg:'請在白棋陣容內部尋找急所。' },
+    ],
+  },
 ]
 
 // ── Tsumego State ──────────────────────────────────────────────────────
@@ -321,13 +373,24 @@ function tClick(r: number, c: number) {
     return
   }
 
+  // 1. 黑棋馬上顯示
+  tStones.value = newStones
+
   if (choice.whiteReply) {
     const wr = choice.whiteReply
-    const afterWhite = placeAndCapture(newStones, wr.r, wr.c, 'white', size)
-    if (afterWhite) { newStones = afterWhite; tLastW.value = { r: wr.r, c: wr.c } }
+    tChoices.value = [] // 隱藏選項，防止使用者在白棋回應前連點
+    setTimeout(() => {
+      // 2. 白棋半秒後顯示並提子
+      const afterWhite = placeAndCapture(newStones, wr.r, wr.c, 'white', size)
+      if (afterWhite) {
+        tStones.value = afterWhite
+        tLastW.value = { r: wr.r, c: wr.c }
+      }
+      tChoices.value = choice.nextChoices || []
+    }, 500)
+  } else {
+    tChoices.value = choice.nextChoices || []
   }
-  tStones.value = newStones
-  tChoices.value = choice.nextChoices
 }
 
 function tRetry() { tInit() }
