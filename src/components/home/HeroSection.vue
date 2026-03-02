@@ -116,8 +116,8 @@ const codeExamples: Record<TabId, { filename: string; lines: CodeLine[] }> = {
             <span class="stat-label">年經驗</span>
           </div>
           <div class="stat-pill glass">
-            <span class="stat-num grad-text">分散式系統</span>
-            <span class="stat-label">專案架構開發</span>
+            <span class="stat-num grad-text">分散式</span>
+            <span class="stat-label">系統架構設計</span>
           </div>
           <div class="stat-pill glass">
             <span class="stat-num grad-text">全</span>
