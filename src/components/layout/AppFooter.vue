@@ -1,5 +1,13 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useVisitorCount } from '@/composables/useVisitorCount'
+
 const currentYear = new Date().getFullYear()
+const { count, loading, fetchCount } = useVisitorCount()
+
+onMounted(() => {
+  fetchCount()
+})
 </script>
 
 <template>
@@ -10,6 +18,12 @@ const currentYear = new Date().getFullYear()
       </span>
       <p class="copy">© {{ currentYear }} RShinz. All rights reserved.</p>
       <p class="built-with">Built with Vue 3 + Vite. Designed by Vibe Coding.</p>
+      <p class="visitor-count">
+        <span class="visitor-icon">👁</span>
+        <span v-if="loading">載入中…</span>
+        <span v-else-if="count !== null">累計訪客 <strong class="count-num">{{ count.toLocaleString() }}</strong> 人</span>
+        <span v-else class="count-na">—</span>
+      </p>
     </div>
   </footer>
 </template>
@@ -43,5 +57,28 @@ const currentYear = new Date().getFullYear()
 .built-with {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.visitor-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.visitor-icon {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.count-num {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.count-na {
+  opacity: 0.4;
 }
 </style>
