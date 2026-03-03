@@ -153,170 +153,136 @@ interface TsumegoData {
 }
 
 const TSUMEGO_PUZZLES: TsumegoData[] = [
-  // ================================================================
+  // 座標系統：c = X（0=左→右遞增），r = Y（0=底部→上遞增）
+  // 引擎內部自動轉換為 SVG row（tcy 函式處理）
+
   // P1 — 1手殺
-  // 白棋 L 形3子：(2,2)(2,3)(3,2)，唯一氣口在 (3,3)
-  // 黑在 (3,3) 落子→提掉白3子
-  // ================================================================
+  // 白棋 L 形3子：(c2,y5)(c3,y6)(c2,y6)，唯一氣口在 (c3,y5)
   {
     id: 1, title: '一手殺', goal: '黑先殺',
     levelLabel: '初級 1手', levelSteps: 1, boardSize: 9,
     initialStones: [
-      // White L-shape
-      { r:2, c:2, color:'white' }, { r:2, c:3, color:'white' }, { r:3, c:2, color:'white' },
-      // Black enclosure (leave (3,3) open = only liberty)
-      { r:1, c:2, color:'black' }, { r:1, c:3, color:'black' },
-      { r:2, c:1, color:'black' }, { r:2, c:4, color:'black' },
-      { r:3, c:1, color:'black' }, { r:4, c:2, color:'black' }, { r:4, c:3, color:'black' },
+      { r:6, c:2, color:'white' }, { r:6, c:3, color:'white' }, { r:5, c:2, color:'white' },
+      { r:7, c:2, color:'black' }, { r:7, c:3, color:'black' },
+      { r:6, c:1, color:'black' }, { r:6, c:4, color:'black' },
+      { r:5, c:1, color:'black' }, { r:4, c:2, color:'black' }, { r:4, c:3, color:'black' },
     ],
     firstChoices: [
-      { r:3, c:3, isCorrect:true,
+      { r:5, c:3, isCorrect:true,
         successMsg:'正確！填入白棋唯一的氣，三子全部被提走！' },
-      { r:1, c:5, isCorrect:false,
-        wrongMsg:'此處不是白棋的氣口，白棋仍在 (3,3) 有一口氣。' },
-      { r:5, c:4, isCorrect:false,
-        wrongMsg:'距離太遠，對白棋毫無威脅，急所在 (3,3)。' },
+      { r:7, c:5, isCorrect:false,
+        wrongMsg:'此處不是白棋的氣口，白棋仍有一口氣。' },
+      { r:3, c:4, isCorrect:false,
+        wrongMsg:'距離太遠，對白棋毫無威脅。' },
     ],
   },
 
-  // ================================================================
   // P2 — 2手殺
-  // 白棋2×2方塊：(2,4)(2,5)(3,4)(3,5)，兩口氣在 (1,4) 和 (4,5)
-  // Step1: 黑 (1,4) → 白只剩 (4,5) 一口氣，白空回應
-  // Step2: 黑 (4,5) → 白4子被提
-  // ================================================================
+  // 白棋2×2方塊：(c4,y5)(c5,y5)(c4,y6)(c5,y6)，兩口氣在 (c4,y7) 和 (c5,y4)
   {
     id: 2, title: '二手殺', goal: '黑先殺',
     levelLabel: '中級 2手', levelSteps: 2, boardSize: 9,
     initialStones: [
-      // White 2×2 block
-      { r:2, c:4, color:'white' }, { r:2, c:5, color:'white' },
-      { r:3, c:4, color:'white' }, { r:3, c:5, color:'white' },
-      // Black enclosure (leave (1,4) and (4,5) open)
-      { r:1, c:5, color:'black' },
-      { r:2, c:3, color:'black' }, { r:2, c:6, color:'black' },
-      { r:3, c:3, color:'black' }, { r:3, c:6, color:'black' },
+      { r:6, c:4, color:'white' }, { r:6, c:5, color:'white' },
+      { r:5, c:4, color:'white' }, { r:5, c:5, color:'white' },
+      { r:7, c:5, color:'black' },
+      { r:6, c:3, color:'black' }, { r:6, c:6, color:'black' },
+      { r:5, c:3, color:'black' }, { r:5, c:6, color:'black' },
       { r:4, c:4, color:'black' },
     ],
     firstChoices: [
-      // Correct step 1: fill (1,4) → white atari at (4,5)
-      { r:1, c:4, isCorrect:true,
-        whiteReply: { r:7, c:7 }, // 白棋徒勞在別處落子
+      { r:7, c:4, isCorrect:true,
+        whiteReply: { r:1, c:7 },
         successMsg: '',
         nextChoices: [
           { r:4, c:5, isCorrect:true,
             successMsg:'完美！白棋最後一口氣被封，四子全部被提走！' },
-          { r:1, c:3, isCorrect:false,
-            wrongMsg:'白棋仍有 (4,5) 一口氣，急所在那裡。' },
+          { r:7, c:3, isCorrect:false,
+            wrongMsg:'白棋仍有 (c5,y4) 一口氣，急所在那裡。' },
           { r:4, c:6, isCorrect:false,
-            wrongMsg:'這步不是白棋的氣口，白棋仍有 (4,5) 可呼吸。' },
+            wrongMsg:'這步不是白棋的氣口，白棋仍有 (c5,y4) 可呼吸。' },
         ],
       },
-      // Wrong step 1: (4,5) also fills a liberty, technically correct but let's guide order
-      // Actually it IS correct too, but let's designate it as wrong to force learning the intended sequence
       { r:4, c:5, isCorrect:false,
-        wrongMsg:'這手也行，但從上方 (1,4) 封住更有次序——白棋無法往上逃。' },
-      { r:6, c:6, isCorrect:false,
+        wrongMsg:'這手也行，但從上方 (c4,y7) 封住更有次序——白棋無法往上逃。' },
+      { r:2, c:6, isCorrect:false,
         wrongMsg:'此處對白棋毫無威脅，白棋仍有兩口氣。' },
     ],
   },
 
-  // ================================================================
   // P3 — 3手殺
-  // 白棋橫排3子：(4,3)(4,4)(4,5)，三口氣在 (3,3)(5,3)(5,5)
-  // Step1: 黑 (3,3) → 縮氣，白空回應
-  // Step2: 黑 (5,3) → 再縮，白空回應
-  // Step3: 黑 (5,5) → 提掉3子
-  // ================================================================
+  // 白棋橫排3子：(c3,y4)(c4,y4)(c5,y4)，三口氣在 (c3,y5)(c3,y3)(c5,y3)
   {
     id: 3, title: '三手殺', goal: '黑先殺',
     levelLabel: '高級 3手', levelSteps: 3, boardSize: 9,
     initialStones: [
-      // White horizontal line
       { r:4, c:3, color:'white' }, { r:4, c:4, color:'white' }, { r:4, c:5, color:'white' },
-      // Black enclosure (leave (3,3)(5,3)(5,5) open)
-      { r:3, c:4, color:'black' }, { r:3, c:5, color:'black' },
-      { r:5, c:4, color:'black' },
+      { r:5, c:4, color:'black' }, { r:5, c:5, color:'black' },
+      { r:3, c:4, color:'black' },
       { r:4, c:2, color:'black' }, { r:4, c:6, color:'black' },
     ],
     firstChoices: [
-      { r:3, c:3, isCorrect:true,
-        whiteReply: { r:7, c:7 },
+      { r:5, c:3, isCorrect:true,
+        whiteReply: { r:1, c:7 },
         successMsg: '',
         nextChoices: [
-          { r:5, c:3, isCorrect:true,
-            whiteReply: { r:7, c:6 },
+          { r:3, c:3, isCorrect:true,
+            whiteReply: { r:1, c:6 },
             successMsg: '',
             nextChoices: [
-              { r:5, c:5, isCorrect:true,
+              { r:3, c:5, isCorrect:true,
                 successMsg:'完美！三步收緊，白棋三子全部被提走！' },
-              { r:6, c:5, isCorrect:false,
-                wrongMsg:'距離白棋最後的氣 (5,5) 很近但不是，填入 (5,5) 才能提子。' },
-              { r:5, c:6, isCorrect:false,
-                wrongMsg:'白棋仍有 (5,5) 一口氣，急所就在那裡！' },
+              { r:2, c:5, isCorrect:false,
+                wrongMsg:'距離白棋最後的氣很近但不是，填入 (c5,y3) 才能提子。' },
+              { r:3, c:6, isCorrect:false,
+                wrongMsg:'白棋仍有 (c5,y3) 一口氣，急所就在那裡！' },
             ],
           },
-          { r:5, c:5, isCorrect:false,
-            wrongMsg:'順序有誤！應先在 (5,3) 繼續收緊左側，再封右側。' },
-          { r:6, c:4, isCorrect:false,
-            wrongMsg:'此處不是白棋的氣口，下一步應繼續縮氣至 (5,3)。' },
+          { r:3, c:5, isCorrect:false,
+            wrongMsg:'順序有誤！應先在 (c3,y3) 繼續收緊左側，再封右側。' },
+          { r:2, c:4, isCorrect:false,
+            wrongMsg:'此處不是白棋的氣口，下一步應繼續縮氣至 (c3,y3)。' },
         ],
       },
-      { r:5, c:5, isCorrect:false,
-        wrongMsg:'可以從這側開始，但從左上 (3,3) 依序縮氣更有系統。' },
-      { r:2, c:4, isCorrect:false,
-        wrongMsg:'此處對白棋毫無影響，白棋仍有三口氣，應先在 (3,3) 開始縮氣。' },
+      { r:3, c:5, isCorrect:false,
+        wrongMsg:'可以從這側開始，但從左上 (c3,y5) 依序縮氣更有系統。' },
+      { r:6, c:4, isCorrect:false,
+        wrongMsg:'此處對白棋毫無影響，白棋仍有三口氣，應先在 (c3,y5) 開始縮氣。' },
     ],
   },
 
-  // ================================================================
   // P4 — 撲與反提（2手）
-  // 測試目的：讓黑棋送吃一子（撲），白棋回應提走該子，視覺上最明顯。
-  //
-  // 盤面設定（9x9 左上角）：
-  //   白棋 U 形：(1,1) (1,2) (1,3) (2,1) (2,3) (3,1) (3,3)
-  //   內部空點：(2,2) 虎口，(3,2) 空點
-  //   外圍全被黑牆包死，因此白棋的氣只剩下內部的 (2,2) 與 (3,2)
-  //
-  // Step 1: 黑下 (2,2)「撲」，由於白棋還有 (3,2) 的氣，黑子合法。
-  //         白棋回應下 (3,2)，將剛落下的黑子 (2,2) 提走。（畫面上的黑子會消失）
-  // Step 2: 從畫面上消失的 (2,2) 變成白棋唯一的氣，黑棋下回 (2,2)，反提全體白棋。
-  // ================================================================
+  // 白棋 U 形7子，內部兩口氣 (c2,y6) 虎口 / (c2,y5) 空點
+  // Step1: 黑撲 (c2,y6)，白提走後 Step2: 黑反提全體白棋
   {
     id: 4, title: '撲與反提', goal: '黑先殺',
     levelLabel: '中級 2手', levelSteps: 2, boardSize: 9,
     initialStones: [
-      // White U-shape block (7 stones)
-      { r:1, c:1, color:'white' }, { r:1, c:2, color:'white' }, { r:1, c:3, color:'white' },
-      { r:2, c:1, color:'white' },                              { r:2, c:3, color:'white' },
-      { r:3, c:1, color:'white' },                              { r:3, c:3, color:'white' },
-      // Black enclosure shutting all outside liberties
-      { r:0, c:1, color:'black' }, { r:0, c:2, color:'black' }, { r:0, c:3, color:'black' },
-      { r:1, c:0, color:'black' }, { r:2, c:0, color:'black' }, { r:3, c:0, color:'black' }, { r:4, c:1, color:'black' },
-      { r:1, c:4, color:'black' }, { r:2, c:4, color:'black' }, { r:3, c:4, color:'black' }, { r:4, c:3, color:'black' },
-      // Close bottom of the inner cavity
-      { r:4, c:2, color:'black' }
+      { r:7, c:1, color:'white' }, { r:7, c:2, color:'white' }, { r:7, c:3, color:'white' },
+      { r:6, c:1, color:'white' },                              { r:6, c:3, color:'white' },
+      { r:5, c:1, color:'white' },                              { r:5, c:3, color:'white' },
+      { r:8, c:1, color:'black' }, { r:8, c:2, color:'black' }, { r:8, c:3, color:'black' },
+      { r:7, c:0, color:'black' }, { r:6, c:0, color:'black' }, { r:5, c:0, color:'black' }, { r:4, c:1, color:'black' },
+      { r:7, c:4, color:'black' }, { r:6, c:4, color:'black' }, { r:5, c:4, color:'black' }, { r:4, c:3, color:'black' },
+      { r:4, c:2, color:'black' },
     ],
     firstChoices: [
       {
-        r:2, c:2, isCorrect:true,
-        // White response: captures the newly played black stone at (2,2) by playing (3,2)
-        whiteReply: { r:3, c:2 },
+        r:6, c:2, isCorrect:true,
+        whiteReply: { r:5, c:2 },
         successMsg: '',
         nextChoices: [
-          // Black recaptures all white stones at the newly empty spot (2,2)
-          { r:2, c:2, isCorrect:true,
+          { r:6, c:2, isCorrect:true,
             successMsg: '成功！這就是「撲」，白棋提走黑子後，黑棋能一舉反提全部白棋！' },
-          { r:5, c:5, isCorrect:false,
-            wrongMsg: '白全體只剩 (2,2) 一口氣，錯過機會就反被吃！' },
-          { r:0, c:4, isCorrect:false,
+          { r:3, c:5, isCorrect:false,
+            wrongMsg: '白全體只剩 (c2,y6) 一口氣，錯過機會就反被吃！' },
+          { r:8, c:4, isCorrect:false,
             wrongMsg: '距離要點太遠。' },
         ],
       },
-      // If black starts at 3,2
-      { r:3, c:2, isCorrect:false,
-        wrongMsg:'下在此處不但無法叫吃白棋，反而讓白棋在 (2,2) 做出真眼。應利用 (2,2) 撲！' },
-      { r:8, c:8, isCorrect:false,
+      { r:5, c:2, isCorrect:false,
+        wrongMsg:'下在此處不但無法叫吃白棋，反而讓白棋在 (c2,y6) 做出真眼。應利用 (c2,y6) 撲！' },
+      { r:0, c:8, isCorrect:false,
         wrongMsg:'請在白棋陣容內部尋找急所。' },
     ],
   },
@@ -327,6 +293,8 @@ const tPuzzleIdx = ref(0)
 const tPuzzle = computed(() => TSUMEGO_PUZZLES[tPuzzleIdx.value])
 const tBoardSize = computed(() => tPuzzle.value.boardSize)
 const tStones = ref<Stone[]>([])
+/** 引擎內部使用 SVG rowﾈ0=頂部） */
+const tEngineStones = ref<Stone[]>([])
 const tChoices = ref<MoveChoice[]>([])
 type TPhase = 'playing' | 'wrong' | 'complete'
 const tPhase = ref<TPhase>('playing')
@@ -336,8 +304,12 @@ const tLastB = ref<{r:number;c:number}|null>(null)
 const tLastW = ref<{r:number;c:number}|null>(null)
 
 function tInit() {
+  const size = tPuzzle.value.boardSize
+  // 儲存使用者座標，tcy() 直接使用
   tStones.value = tPuzzle.value.initialStones.map(s => ({ ...s }))
   tChoices.value = tPuzzle.value.firstChoices
+  // 預先建立 SVG座標版本的初始石陣存入內部引擎 buffer
+  tEngineStones.value = tPuzzle.value.initialStones.map(s => ({ ...s, r: toSvgR(s.r, size) }))
   tPhase.value = 'playing'
   tMsg.value = ''
   tStep.value = 0
@@ -346,44 +318,48 @@ function tInit() {
 }
 tInit()
 
-function tClick(r: number, c: number) {
+function tClick(userR: number, c: number) {
   if (tPhase.value !== 'playing') return
-  const choice = tChoices.value.find(ch => ch.r === r && ch.c === c)
+  const choice = tChoices.value.find(ch => ch.r === userR && ch.c === c)
   if (!choice) return
   const size = tBoardSize.value
+  const svgR = toSvgR(userR, size)
 
   if (!choice.isCorrect) {
-    const result = placeAndCapture(tStones.value, r, c, 'black', size)
-    tStones.value = result ?? tStones.value
-    tLastB.value = { r, c }
+    const result = placeAndCapture(tEngineStones.value, svgR, c, 'black', size)
+    if (result) {
+      tEngineStones.value = result
+      tStones.value = result.map(s => ({ ...s, r: toUserR(s.r, size) }))
+    }
+    tLastB.value = { r: userR, c }
     tMsg.value = choice.wrongMsg ?? '再想想！'
     tPhase.value = 'wrong'
     return
   }
 
   // Correct move
-  let newStones = placeAndCapture(tStones.value, r, c, 'black', size)!
-  tLastB.value = { r, c }
+  let newEngine = placeAndCapture(tEngineStones.value, svgR, c, 'black', size)!
+  tEngineStones.value = newEngine
+  tStones.value = newEngine.map(s => ({ ...s, r: toUserR(s.r, size) }))
+  tLastB.value = { r: userR, c }
   tStep.value++
 
   if (!choice.nextChoices?.length) {
-    tStones.value = newStones
     tMsg.value = choice.successMsg ?? '正確！'
     tPhase.value = 'complete'
     return
   }
 
-  // 1. 黑棋馬上顯示
-  tStones.value = newStones
-
   if (choice.whiteReply) {
     const wr = choice.whiteReply
-    tChoices.value = [] // 隱藏選項，防止使用者在白棋回應前連點
+    tChoices.value = []
     setTimeout(() => {
-      // 2. 白棋半秒後顯示並提子
-      const afterWhite = placeAndCapture(newStones, wr.r, wr.c, 'white', size)
+      const wrSvgR = toSvgR(wr.r, size)
+      const afterWhite = placeAndCapture(newEngine, wrSvgR, wr.c, 'white', size)
       if (afterWhite) {
-        tStones.value = afterWhite
+        newEngine = afterWhite
+        tEngineStones.value = afterWhite
+        tStones.value = afterWhite.map(s => ({ ...s, r: toUserR(s.r, size) }))
         tLastW.value = { r: wr.r, c: wr.c }
       }
       tChoices.value = choice.nextChoices || []
@@ -402,6 +378,12 @@ const activeSize = computed(() => mode.value === 'free' ? boardSize.value : tBoa
 
 function cx(c: number) { return PAD + c * STEP }
 function cy(r: number) { return PAD + r * STEP }
+/** 詰棋專用：將使用者座標（r=0→底部）轉為 SVG Y */
+function tcy(r: number) { return cy(tBoardSize.value - 1 - r) }
+/** 使用者 Y → SVG row（0=頂部） */
+function toSvgR(userR: number, size: number) { return size - 1 - userR }
+/** SVG row → 使用者 Y */
+function toUserR(svgR: number, size: number) { return size - 1 - svgR }
 
 // ── Mode ──────────────────────────────────────────────────────────────
 const mode = ref<'free' | 'tsumego'>('free')
@@ -535,20 +517,33 @@ const LEVEL_COLOR: Record<string, string> = {
           <circle v-for="([hr,hc],i) in HOSHI[tBoardSize]" :key="`h${i}`"
             :cx="cx(hc)" :cy="cy(hr)" r="3" fill="#4a5568" />
 
+          <!-- Column labels bottom -->
+          <text v-for="c in tBoardSize" :key="`tclb${c}`"
+            :x="cx(c-1)" :y="cy(tBoardSize-1)+18"
+            text-anchor="middle" dominant-baseline="middle"
+            font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+            {{ colLabel(c-1) }}</text>
+          <!-- Row labels left -->
+          <text v-for="r in tBoardSize" :key="`trl${r}`"
+            :x="cx(0)-18" :y="cy(r-1)"
+            text-anchor="middle" dominant-baseline="middle"
+            font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+            {{ tBoardSize - r }}</text>
+
           <!-- Choice hint rings + labels -->
           <g v-for="(ch,idx) in (tPhase==='playing' ? tChoices : [])" :key="`h${ch.r}${ch.c}`"
             @click="tClick(ch.r, ch.c)" style="cursor:pointer">
-            <circle :cx="cx(ch.c)" :cy="cy(ch.r)" r="12"
+            <circle :cx="cx(ch.c)" :cy="tcy(ch.r)" r="12"
               fill="rgba(96,165,250,0.07)" stroke="rgba(96,165,250,0.5)"
               stroke-width="1.5" stroke-dasharray="4 2" class="hint-ring" />
-            <text :x="cx(ch.c)" :y="cy(ch.r)+4" text-anchor="middle"
+            <text :x="cx(ch.c)" :y="tcy(ch.r)+4" text-anchor="middle"
               font-size="10" font-weight="bold" fill="rgba(96,165,250,0.9)"
               style="pointer-events:none">{{ ['A','B','C'][idx] }}</text>
           </g>
 
           <!-- Stones -->
           <circle v-for="s in tStones" :key="`${s.r},${s.c},${s.color}`"
-            :cx="cx(s.c)" :cy="cy(s.r)" r="13"
+            :cx="cx(s.c)" :cy="tcy(s.r)" r="13"
             :class="s.color === 'black' ? 'stone-black' : 'stone-white'"
             :style="(s.color==='black' && tLastB?.r===s.r && tLastB?.c===s.c)
               ? 'filter:drop-shadow(0 0 8px rgba(96,165,250,0.9))'
@@ -557,7 +552,7 @@ const LEVEL_COLOR: Record<string, string> = {
 
           <!-- White response dot marker -->
           <circle v-if="tLastW && tPhase==='playing'"
-            :cx="cx(tLastW.c)" :cy="cy(tLastW.r)" r="4"
+            :cx="cx(tLastW.c)" :cy="tcy(tLastW.r)" r="4"
             fill="rgba(60,60,60,0.7)" style="pointer-events:none" />
         </svg>
       </div>
