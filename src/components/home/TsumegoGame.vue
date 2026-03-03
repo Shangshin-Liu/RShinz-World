@@ -387,7 +387,7 @@ function tClick(r: number, c: number) {
         tLastW.value = { r: wr.r, c: wr.c }
       }
       tChoices.value = choice.nextChoices || []
-    }, 500)
+    }, 1000)
   } else {
     tChoices.value = choice.nextChoices || []
   }
