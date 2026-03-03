@@ -18,7 +18,7 @@ function getGroup(stones: Stone[], r: number, c: number, size: number): Stone[] 
     const key = `${cur.r},${cur.c}`
     if (visited.has(key)) continue
     visited.add(key); group.push(cur)
-    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]] as const) {
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]] as const) {
       const nr = cur.r + dr, nc = cur.c + dc
       if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue
       const nb = stones.find(s => s.r === nr && s.c === nc)
@@ -30,7 +30,7 @@ function getGroup(stones: Stone[], r: number, c: number, size: number): Stone[] 
 
 function hasLiberty(stones: Stone[], group: Stone[], size: number): boolean {
   for (const s of group) {
-    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]] as const) {
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]] as const) {
       const nr = s.r + dr, nc = s.c + dc
       if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue
       if (!stones.find(x => x.r === nr && x.c === nc)) return true
@@ -46,7 +46,7 @@ function placeAndCapture(
   let result = [...stones, { r, c, color }]
   const opponent: Color = color === 'black' ? 'white' : 'black'
   const checked = new Set<string>()
-  for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]] as const) {
+  for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]] as const) {
     const nr = r + dr, nc = c + dc
     if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue
     const key = `${nr},${nc}`
@@ -74,8 +74,8 @@ const colLabel = (c: number) => String(c)
 const rowLabel = (r: number) => String(boardSize.value - 1 - r)
 
 const HOSHI: Record<BoardSize, [number, number][]> = {
-  9:  [[2,2],[2,6],[4,4],[6,2],[6,6]],
-  13: [[3,3],[3,9],[6,6],[9,3],[9,9]],
+  9: [[2, 2], [2, 6], [4, 4], [6, 2], [6, 6]],
+  13: [[3, 3], [3, 9], [6, 6], [9, 3], [9, 9]],
 }
 
 const boardSize = ref<BoardSize>(9)
@@ -93,7 +93,7 @@ function freePlaceStone(r: number, c: number, color: Color) {
   const before = freeStones.value
   const result = placeAndCapture(before, r, c, color, boardSize.value)
   if (result === null) {
-    freeMsg.value = `❌ 禁手：(${c},${boardSize.value-1-r}) 無法落子`
+    freeMsg.value = `❌ 禁手：(${c},${boardSize.value - 1 - r}) 無法落子`
     return
   }
   const cap = countCaptures(before, result, color === 'black' ? 'white' : 'black')
@@ -101,8 +101,8 @@ function freePlaceStone(r: number, c: number, color: Color) {
   else capturedW.value += cap
   freeStones.value = result
   freeMsg.value = cap > 0
-    ? `✅ 落${color === 'black' ? '黑' : '白'}子於 (${c},${boardSize.value-1-r})，提掉 ${cap} 子`
-    : `落${color === 'black' ? '黑' : '白'}子於 (${c},${boardSize.value-1-r})`
+    ? `✅ 落${color === 'black' ? '黑' : '白'}子於 (${c},${boardSize.value - 1 - r})，提掉 ${cap} 子`
+    : `落${color === 'black' ? '黑' : '白'}子於 (${c},${boardSize.value - 1 - r})`
 }
 
 function freeHandleClick(e: MouseEvent, r: number, c: number) {
@@ -113,7 +113,7 @@ function freeHandleClick(e: MouseEvent, r: number, c: number) {
 
 function freeRemoveStone(r: number, c: number) {
   freeStones.value = freeStones.value.filter(s => !(s.r === r && s.c === c))
-  freeMsg.value = `移除 (${c},${boardSize.value-1-r})`
+  freeMsg.value = `移除 (${c},${boardSize.value - 1 - r})`
 }
 
 function clearBoard() {
@@ -152,140 +152,658 @@ interface TsumegoData {
   firstChoices: MoveChoice[]
 }
 
+// 座標系統：c = X（0=左→右遞增），r = Y（0=底部→上遞增）
+// 引擎內部自動轉換為 SVG row（tcy 函式處理）
 const TSUMEGO_PUZZLES: TsumegoData[] = [
-  // 座標系統：c = X（0=左→右遞增），r = Y（0=底部→上遞增）
-  // 引擎內部自動轉換為 SVG row（tcy 函式處理）
-
-  // P1 — 1手殺
-  // 白棋 L 形3子：(c2,y5)(c3,y6)(c2,y6)，唯一氣口在 (c3,y5)
   {
-    id: 1, title: '一手殺', goal: '黑先殺',
-    levelLabel: '初級 1手', levelSteps: 1, boardSize: 9,
-    initialStones: [
-      { r:6, c:2, color:'white' }, { r:6, c:3, color:'white' }, { r:5, c:2, color:'white' },
-      { r:7, c:2, color:'black' }, { r:7, c:3, color:'black' },
-      { r:6, c:1, color:'black' }, { r:6, c:4, color:'black' },
-      { r:5, c:1, color:'black' }, { r:4, c:2, color:'black' }, { r:4, c:3, color:'black' },
-    ],
-    firstChoices: [
-      { r:5, c:3, isCorrect:true,
-        successMsg:'正確！填入白棋唯一的氣，三子全部被提走！' },
-      { r:7, c:5, isCorrect:false,
-        wrongMsg:'此處不是白棋的氣口，白棋仍有一口氣。' },
-      { r:3, c:4, isCorrect:false,
-        wrongMsg:'距離太遠，對白棋毫無威脅。' },
-    ],
-  },
-
-  // P2 — 2手殺
-  // 白棋2×2方塊：(c4,y5)(c5,y5)(c4,y6)(c5,y6)，兩口氣在 (c4,y7) 和 (c5,y4)
-  {
-    id: 2, title: '二手殺', goal: '黑先殺',
-    levelLabel: '中級 2手', levelSteps: 2, boardSize: 9,
-    initialStones: [
-      { r:6, c:4, color:'white' }, { r:6, c:5, color:'white' },
-      { r:5, c:4, color:'white' }, { r:5, c:5, color:'white' },
-      { r:7, c:5, color:'black' },
-      { r:6, c:3, color:'black' }, { r:6, c:6, color:'black' },
-      { r:5, c:3, color:'black' }, { r:5, c:6, color:'black' },
-      { r:4, c:4, color:'black' },
-    ],
-    firstChoices: [
-      { r:7, c:4, isCorrect:true,
-        whiteReply: { r:1, c:7 },
-        successMsg: '',
-        nextChoices: [
-          { r:4, c:5, isCorrect:true,
-            successMsg:'完美！白棋最後一口氣被封，四子全部被提走！' },
-          { r:7, c:3, isCorrect:false,
-            wrongMsg:'白棋仍有 (c5,y4) 一口氣，急所在那裡。' },
-          { r:4, c:6, isCorrect:false,
-            wrongMsg:'這步不是白棋的氣口，白棋仍有 (c5,y4) 可呼吸。' },
-        ],
-      },
-      { r:4, c:5, isCorrect:false,
-        wrongMsg:'這手也行，但從上方 (c4,y7) 封住更有次序——白棋無法往上逃。' },
-      { r:2, c:6, isCorrect:false,
-        wrongMsg:'此處對白棋毫無威脅，白棋仍有兩口氣。' },
-    ],
-  },
-
-  // P3 — 3手殺
-  // 白棋橫排3子：(c3,y4)(c4,y4)(c5,y4)，三口氣在 (c3,y5)(c3,y3)(c5,y3)
-  {
-    id: 3, title: '三手殺', goal: '黑先殺',
-    levelLabel: '高級 3手', levelSteps: 3, boardSize: 9,
-    initialStones: [
-      { r:4, c:3, color:'white' }, { r:4, c:4, color:'white' }, { r:4, c:5, color:'white' },
-      { r:5, c:4, color:'black' }, { r:5, c:5, color:'black' },
-      { r:3, c:4, color:'black' },
-      { r:4, c:2, color:'black' }, { r:4, c:6, color:'black' },
-    ],
-    firstChoices: [
-      { r:5, c:3, isCorrect:true,
-        whiteReply: { r:1, c:7 },
-        successMsg: '',
-        nextChoices: [
-          { r:3, c:3, isCorrect:true,
-            whiteReply: { r:1, c:6 },
-            successMsg: '',
-            nextChoices: [
-              { r:3, c:5, isCorrect:true,
-                successMsg:'完美！三步收緊，白棋三子全部被提走！' },
-              { r:2, c:5, isCorrect:false,
-                wrongMsg:'距離白棋最後的氣很近但不是，填入 (c5,y3) 才能提子。' },
-              { r:3, c:6, isCorrect:false,
-                wrongMsg:'白棋仍有 (c5,y3) 一口氣，急所就在那裡！' },
-            ],
-          },
-          { r:3, c:5, isCorrect:false,
-            wrongMsg:'順序有誤！應先在 (c3,y3) 繼續收緊左側，再封右側。' },
-          { r:2, c:4, isCorrect:false,
-            wrongMsg:'此處不是白棋的氣口，下一步應繼續縮氣至 (c3,y3)。' },
-        ],
-      },
-      { r:3, c:5, isCorrect:false,
-        wrongMsg:'可以從這側開始，但從左上 (c3,y5) 依序縮氣更有系統。' },
-      { r:6, c:4, isCorrect:false,
-        wrongMsg:'此處對白棋毫無影響，白棋仍有三口氣，應先在 (c3,y5) 開始縮氣。' },
-    ],
-  },
-
-  // P4 — 撲與反提（2手）
-  // 白棋 U 形7子，內部兩口氣 (c2,y6) 虎口 / (c2,y5) 空點
-  // Step1: 黑撲 (c2,y6)，白提走後 Step2: 黑反提全體白棋
-  {
-    id: 4, title: '撲與反提', goal: '黑先殺',
-    levelLabel: '中級 2手', levelSteps: 2, boardSize: 9,
-    initialStones: [
-      { r:7, c:1, color:'white' }, { r:7, c:2, color:'white' }, { r:7, c:3, color:'white' },
-      { r:6, c:1, color:'white' },                              { r:6, c:3, color:'white' },
-      { r:5, c:1, color:'white' },                              { r:5, c:3, color:'white' },
-      { r:8, c:1, color:'black' }, { r:8, c:2, color:'black' }, { r:8, c:3, color:'black' },
-      { r:7, c:0, color:'black' }, { r:6, c:0, color:'black' }, { r:5, c:0, color:'black' }, { r:4, c:1, color:'black' },
-      { r:7, c:4, color:'black' }, { r:6, c:4, color:'black' }, { r:5, c:4, color:'black' }, { r:4, c:3, color:'black' },
-      { r:4, c:2, color:'black' },
-    ],
-    firstChoices: [
+    "id": 1,
+    "title": "吃子練習",
+    "goal": "依序完成畫面上題目",
+    "levelLabel": "新手",
+    "levelSteps": 5,
+    "boardSize": 9,
+    "initialStones": [
       {
-        r:6, c:2, isCorrect:true,
-        whiteReply: { r:5, c:2 },
-        successMsg: '',
-        nextChoices: [
-          { r:6, c:2, isCorrect:true,
-            successMsg: '成功！這就是「撲」，白棋提走黑子後，黑棋能一舉反提全部白棋！' },
-          { r:3, c:5, isCorrect:false,
-            wrongMsg: '白全體只剩 (c2,y6) 一口氣，錯過機會就反被吃！' },
-          { r:8, c:4, isCorrect:false,
-            wrongMsg: '距離要點太遠。' },
-        ],
+        "r": 0,
+        "c": 0,
+        "color": "white"
       },
-      { r:5, c:2, isCorrect:false,
-        wrongMsg:'下在此處不但無法叫吃白棋，反而讓白棋在 (c2,y6) 做出真眼。應利用 (c2,y6) 撲！' },
-      { r:0, c:8, isCorrect:false,
-        wrongMsg:'請在白棋陣容內部尋找急所。' },
+      {
+        "r": 6,
+        "c": 6,
+        "color": "white"
+      },
+      {
+        "r": 0,
+        "c": 7,
+        "color": "white"
+      },
+      {
+        "r": 1,
+        "c": 7,
+        "color": "white"
+      },
+      {
+        "r": 1,
+        "c": 0,
+        "color": "black"
+      },
+      {
+        "r": 0,
+        "c": 3,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 4,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 0,
+        "color": "black"
+      },
+      {
+        "r": 8,
+        "c": 1,
+        "color": "black"
+      },
+      {
+        "r": 6,
+        "c": 1,
+        "color": "black"
+      },
+      {
+        "r": 6,
+        "c": 5,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 6,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 7,
+        "color": "black"
+      },
+      {
+        "r": 5,
+        "c": 6,
+        "color": "black"
+      },
+      {
+        "r": 6,
+        "c": 8,
+        "color": "black"
+      },
+      {
+        "r": 0,
+        "c": 6,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 6,
+        "color": "black"
+      },
+      {
+        "r": 2,
+        "c": 7,
+        "color": "black"
+      },
+      {
+        "r": 2,
+        "c": 8,
+        "color": "black"
+      }
     ],
+    "firstChoices": [
+      {
+        "r": 0,
+        "c": 1,
+        "isCorrect": true,
+        "whiteReply": {
+          "r": 0,
+          "c": 4
+        },
+        "successMsg": "",
+        "nextChoices": [
+          {
+            "r": 0,
+            "c": 5,
+            "isCorrect": true,
+            "whiteReply": {
+              "r": 7,
+              "c": 1
+            },
+            "successMsg": "",
+            "nextChoices": [
+              {
+                "r": 7,
+                "c": 2,
+                "isCorrect": true,
+                "whiteReply": {
+                  "r": 6,
+                  "c": 7
+                },
+                "successMsg": "",
+                "nextChoices": [
+                  {
+                    "r": 5,
+                    "c": 7,
+                    "isCorrect": true,
+                    "whiteReply": {
+                      "r": 1,
+                      "c": 8
+                    },
+                    "successMsg": "",
+                    "nextChoices": [
+                      {
+                        "r": 0,
+                        "c": 8,
+                        "isCorrect": true,
+                        "successMsg": "讚讚！你知道怎麼提子了～"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
+  {
+    "id": 2,
+    "title": "眼位練習",
+    "goal": "試試看找出眼位",
+    "levelLabel": "新手",
+    "levelSteps": 5,
+    "boardSize": 13,
+    "initialStones": [
+      {
+        "r": 2,
+        "c": 0,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 1,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 2,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 3,
+        "color": "white"
+      },
+      {
+        "r": 0,
+        "c": 4,
+        "color": "white"
+      },
+      {
+        "r": 1,
+        "c": 4,
+        "color": "white"
+      },
+      {
+        "r": 1,
+        "c": 7,
+        "color": "white"
+      },
+      {
+        "r": 0,
+        "c": 7,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 8,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 9,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 10,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 11,
+        "color": "white"
+      },
+      {
+        "r": 2,
+        "c": 12,
+        "color": "white"
+      },
+      {
+        "r": 4,
+        "c": 0,
+        "color": "white"
+      },
+      {
+        "r": 4,
+        "c": 1,
+        "color": "white"
+      },
+      {
+        "r": 5,
+        "c": 2,
+        "color": "white"
+      },
+      {
+        "r": 6,
+        "c": 2,
+        "color": "white"
+      },
+      {
+        "r": 7,
+        "c": 3,
+        "color": "white"
+      },
+      {
+        "r": 8,
+        "c": 3,
+        "color": "white"
+      },
+      {
+        "r": 9,
+        "c": 0,
+        "color": "white"
+      },
+      {
+        "r": 9,
+        "c": 1,
+        "color": "white"
+      },
+      {
+        "r": 9,
+        "c": 2,
+        "color": "white"
+      },
+      {
+        "r": 9,
+        "c": 5,
+        "color": "white"
+      },
+      {
+        "r": 8,
+        "c": 5,
+        "color": "white"
+      },
+      {
+        "r": 7,
+        "c": 5,
+        "color": "white"
+      },
+      {
+        "r": 6,
+        "c": 6,
+        "color": "white"
+      },
+      {
+        "r": 6,
+        "c": 7,
+        "color": "white"
+      },
+      {
+        "r": 6,
+        "c": 8,
+        "color": "white"
+      },
+      {
+        "r": 6,
+        "c": 9,
+        "color": "white"
+      },
+      {
+        "r": 6,
+        "c": 10,
+        "color": "white"
+      },
+      {
+        "r": 7,
+        "c": 11,
+        "color": "white"
+      },
+      {
+        "r": 8,
+        "c": 11,
+        "color": "white"
+      },
+      {
+        "r": 9,
+        "c": 11,
+        "color": "white"
+      },
+      {
+        "r": 10,
+        "c": 11,
+        "color": "white"
+      },
+      {
+        "r": 11,
+        "c": 10,
+        "color": "white"
+      },
+      {
+        "r": 11,
+        "c": 9,
+        "color": "white"
+      },
+      {
+        "r": 11,
+        "c": 8,
+        "color": "white"
+      },
+      {
+        "r": 10,
+        "c": 7,
+        "color": "white"
+      },
+      {
+        "r": 10,
+        "c": 6,
+        "color": "white"
+      },
+
+
+      {
+        "r": 1,
+        "c": 0,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 1,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 2,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 3,
+        "color": "black"
+      },
+      {
+        "r": 0,
+        "c": 3,
+        "color": "black"
+      },
+      {
+        "r": 0,
+        "c": 8,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 8,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 9,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 10,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 11,
+        "color": "black"
+      },
+      {
+        "r": 1,
+        "c": 12,
+        "color": "black"
+      },
+      {
+        "r": 5,
+        "c": 0,
+        "color": "black"
+      },
+      {
+        "r": 5,
+        "c": 1,
+        "color": "black"
+      },
+      {
+        "r": 6,
+        "c": 1,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 2,
+        "color": "black"
+      },
+      {
+        "r": 8,
+        "c": 2,
+        "color": "black"
+      },
+      {
+        "r": 8,
+        "c": 1,
+        "color": "black"
+      },
+      {
+        "r": 8,
+        "c": 0,
+        "color": "black"
+      },
+      {
+        "r": 9,
+        "c": 6,
+        "color": "black"
+      },
+      {
+        "r": 9,
+        "c": 7,
+        "color": "black"
+      },
+      {
+        "r": 10,
+        "c": 8,
+        "color": "black"
+      },
+      {
+        "r": 10,
+        "c": 9,
+        "color": "black"
+      },
+      {
+        "r": 10,
+        "c": 10,
+        "color": "black"
+      },
+      {
+        "r": 9,
+        "c": 10,
+        "color": "black"
+      },
+      {
+        "r": 8,
+        "c": 10,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 10,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 9,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 8,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 7,
+        "color": "black"
+      },
+      {
+        "r": 7,
+        "c": 6,
+        "color": "black"
+      },
+      {
+        "r": 8,
+        "c": 6,
+        "color": "black"
+      }
+    ],
+    "firstChoices": [
+      {
+        "r": 0,
+        "c": 1,
+        "isCorrect": true,
+        "successMsg": "正中紅心，有兩隻眼睛即兩邊都是禁手點，白棋殺不掉囉！",
+        "nextChoices": [
+          {
+            "r": 0,
+            "c": 10,
+            "isCorrect": true,
+            "whiteReply": {
+              "r": 0,
+              "c": 11
+            },
+            "successMsg": "已成功做出眼睛，白棋就算落子也不可能緊住所有黑棋的氣。此外黑棋下(0,11)也可以有一樣的效果",
+            "nextChoices": [
+              {
+                "r": 7,
+                "c": 0,
+                "isCorrect": true,
+                "successMsg": "再次命中紅心~下在這裡形成兩隻眼睛後，白棋兩邊都是禁手點已無法殺死黑棋(灑花)",
+                "nextChoices": [
+                  {
+                    "r": 9,
+                    "c": 8,
+                    "isCorrect": true,
+                    "whiteReply": {
+                      "r": 8,
+                      "c": 8
+                    },
+                    "successMsg": "",
+                    "nextChoices": [
+                      {
+                        "r": 8,
+                        "c": 9,
+                        "isCorrect": true,
+                        "successMsg": "我的天哪~你完全懂了，圍棋不難齁!! (但其實這裡有更好的答案...)"
+                      }
+                    ]
+                  },
+                  {
+                    "r": 8,
+                    "c": 8,
+                    "isCorrect": true,
+                    "successMsg": "能直接下在真是太厲害了，這真真正正是完美解答R!"
+                  },
+                  {
+                    "r": 8,
+                    "c": 7,
+                    "isCorrect": false,
+                    "wrongMsg": "照這個下法原本活的都完蛋了 嗚嗚嗚~我演示給你看",
+                    "whiteReply": {
+                      "r": 8,
+                      "c": 8
+                    },
+                    "nextChoices": [
+                      {
+                        "r": 9,
+                        "c": 8,
+                        "isCorrect": false,
+                        "wrongMsg": "no use"
+                      },
+                      {
+                        "r": 8,
+                        "c": 9,
+                        "isCorrect": false,
+                        "wrongMsg": "no use"
+                      },
+                      {
+                        "r": 9,
+                        "c": 9,
+                        "isCorrect": false,
+                        "whiteReply": {
+                          "r": 9,
+                          "c": 8
+                        },
+                        "wrongMsg": "看似可以抵抗但...不妙",
+                        "nextChoices": [
+                          {
+                            "r": 4,
+                            "c": 6,
+                            "isCorrect": false,
+                            "whiteReply": {
+                              "r": 8,
+                              "c": 9
+                            },
+                            "wrongMsg": "都被吃掉了，問題不大可以重來^O^"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "r": 6,
+                "c": 0,
+                "isCorrect": false,
+                "wrongMsg": "沒有眼會被吃掉的QQ"
+              }
+            ]
+          },
+          {
+            "r": 0,
+            "c": 9,
+            "isCorrect": false,
+            "whiteReply": {
+              "r": 0,
+              "c": 11
+            },
+            "wrongMsg": "本來是活型這樣下可就反而讓白棋可以破眼了 oh~不"
+          }
+        ]
+      },
+      {
+        "r": 0,
+        "c": 0,
+        "isCorrect": false,
+        "whiteReply": {
+          "r": 0,
+          "c": 1
+        },
+        "wrongMsg": "沒有眼會被吃掉的QQ"
+      }
+    ]
+  }
 ]
 
 // ── Tsumego State ──────────────────────────────────────────────────────
@@ -300,8 +818,8 @@ type TPhase = 'playing' | 'wrong' | 'complete'
 const tPhase = ref<TPhase>('playing')
 const tMsg = ref('')
 const tStep = ref(0)
-const tLastB = ref<{r:number;c:number}|null>(null)
-const tLastW = ref<{r:number;c:number}|null>(null)
+const tLastB = ref<{ r: number; c: number } | null>(null)
+const tLastW = ref<{ r: number; c: number } | null>(null)
 
 function tInit() {
   const size = tPuzzle.value.boardSize
@@ -417,8 +935,7 @@ const LEVEL_COLOR: Record<string, string> = {
       <div class="toolbar">
         <div class="tool-group">
           <span class="tool-label">棋盤</span>
-          <button v-for="s in SIZES" :key="s"
-            class="tool-btn" :class="{ active: boardSize === s }"
+          <button v-for="s in SIZES" :key="s" class="tool-btn" :class="{ active: boardSize === s }"
             @click="changeSize(s)">{{ s }}×{{ s }}</button>
         </div>
         <div class="tool-group">
@@ -438,41 +955,33 @@ const LEVEL_COLOR: Record<string, string> = {
       </div>
 
       <div class="board-wrap">
-        <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%"
-          preserveAspectRatio="xMidYMid meet" class="board-svg" @contextmenu.prevent>
-          <line v-for="r in boardSize" :key="`hr${r}`"
-            :x1="cx(0)" :y1="cy(r-1)" :x2="cx(boardSize-1)" :y2="cy(r-1)"
-            stroke="#3a4060" stroke-width="1" />
-          <line v-for="c in boardSize" :key="`vc${c}`"
-            :x1="cx(c-1)" :y1="cy(0)" :x2="cx(c-1)" :y2="cy(boardSize-1)"
-            stroke="#3a4060" stroke-width="1" />
-          <circle v-for="([hr,hc],i) in HOSHI[boardSize]" :key="`h${i}`"
-            :cx="cx(hc)" :cy="cy(hr)" r="3" fill="#4a5568" />
+        <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%" preserveAspectRatio="xMidYMid meet" class="board-svg"
+          @contextmenu.prevent>
+          <line v-for="r in boardSize" :key="`hr${r}`" :x1="cx(0)" :y1="cy(r - 1)" :x2="cx(boardSize - 1)"
+            :y2="cy(r - 1)" stroke="#3a4060" stroke-width="1" />
+          <line v-for="c in boardSize" :key="`vc${c}`" :x1="cx(c - 1)" :y1="cy(0)" :x2="cx(c - 1)"
+            :y2="cy(boardSize - 1)" stroke="#3a4060" stroke-width="1" />
+          <circle v-for="([hr, hc], i) in HOSHI[boardSize]" :key="`h${i}`" :cx="cx(hc)" :cy="cy(hr)" r="3"
+            fill="#4a5568" />
           <!-- Column labels bottom -->
-          <text v-for="c in boardSize" :key="`clb${c}`"
-            :x="cx(c-1)" :y="cy(boardSize-1)+18"
-            text-anchor="middle" dominant-baseline="middle"
-            font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
-            {{ colLabel(c-1) }}</text>
+          <text v-for="c in boardSize" :key="`clb${c}`" :x="cx(c - 1)" :y="cy(boardSize - 1) + 18" text-anchor="middle"
+            dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+            {{ colLabel(c - 1) }}</text>
           <!-- Row labels left -->
-          <text v-for="r in boardSize" :key="`rl${r}`"
-            :x="cx(0)-18" :y="cy(r-1)"
-            text-anchor="middle" dominant-baseline="middle"
-            font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
-            {{ rowLabel(r-1) }}</text>
+          <text v-for="r in boardSize" :key="`rl${r}`" :x="cx(0) - 18" :y="cy(r - 1)" text-anchor="middle"
+            dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+            {{ rowLabel(r - 1) }}</text>
           <!-- Clickable cells -->
           <g v-for="r in boardSize" :key="`row${r}`">
-            <circle v-for="c in boardSize" :key="`cell${r},${c}`"
-              :cx="cx(c-1)" :cy="cy(r-1)" :r="STEP/2-2"
+            <circle v-for="c in boardSize" :key="`cell${r},${c}`" :cx="cx(c - 1)" :cy="cy(r - 1)" :r="STEP / 2 - 2"
               fill="transparent" class="cell-target"
-              @click="e => { if(!freeStones.find(s=>s.r===r-1&&s.c===c-1)) freeHandleClick(e,r-1,c-1) }"
-              @contextmenu.prevent="e => freeHandleClick(e,r-1,c-1)" />
+              @click="e => { if (!freeStones.find(s => s.r === r - 1 && s.c === c - 1)) freeHandleClick(e, r - 1, c - 1) }"
+              @contextmenu.prevent="e => freeHandleClick(e, r - 1, c - 1)" />
           </g>
           <!-- Stones -->
-          <circle v-for="s in freeStones" :key="`${s.r},${s.c}`"
-            :cx="cx(s.c)" :cy="cy(s.r)" r="13"
-            :class="s.color === 'black' ? 'stone-black' : 'stone-white'"
-            @click.stop="freeRemoveStone(s.r, s.c)" style="cursor:pointer" />
+          <circle v-for="s in freeStones" :key="`${s.r},${s.c}`" :cx="cx(s.c)" :cy="cy(s.r)" r="13"
+            :class="s.color === 'black' ? 'stone-black' : 'stone-white'" @click.stop="freeRemoveStone(s.r, s.c)"
+            style="cursor:pointer" />
         </svg>
       </div>
 
@@ -501,66 +1010,54 @@ const LEVEL_COLOR: Record<string, string> = {
       <!-- Step dots -->
       <div class="step-dots" v-if="tPuzzle.levelSteps > 1">
         <span v-for="i in tPuzzle.levelSteps" :key="i" class="dot"
-          :class="{ active: i-1 < tStep, current: i-1 === tStep && tPhase === 'playing' }" />
+          :class="{ active: i - 1 < tStep, current: i - 1 === tStep && tPhase === 'playing' }" />
       </div>
 
       <!-- Board -->
       <div class="board-wrap">
-        <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%"
-          preserveAspectRatio="xMidYMid meet" class="board-svg">
-          <line v-for="r in tBoardSize" :key="`hr${r}`"
-            :x1="cx(0)" :y1="cy(r-1)" :x2="cx(tBoardSize-1)" :y2="cy(r-1)"
-            stroke="#3a4060" stroke-width="1" />
-          <line v-for="c in tBoardSize" :key="`vc${c}`"
-            :x1="cx(c-1)" :y1="cy(0)" :x2="cx(c-1)" :y2="cy(tBoardSize-1)"
-            stroke="#3a4060" stroke-width="1" />
-          <circle v-for="([hr,hc],i) in HOSHI[tBoardSize]" :key="`h${i}`"
-            :cx="cx(hc)" :cy="cy(hr)" r="3" fill="#4a5568" />
+        <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%" preserveAspectRatio="xMidYMid meet" class="board-svg">
+          <line v-for="r in tBoardSize" :key="`hr${r}`" :x1="cx(0)" :y1="cy(r - 1)" :x2="cx(tBoardSize - 1)"
+            :y2="cy(r - 1)" stroke="#3a4060" stroke-width="1" />
+          <line v-for="c in tBoardSize" :key="`vc${c}`" :x1="cx(c - 1)" :y1="cy(0)" :x2="cx(c - 1)"
+            :y2="cy(tBoardSize - 1)" stroke="#3a4060" stroke-width="1" />
+          <circle v-for="([hr, hc], i) in HOSHI[tBoardSize]" :key="`h${i}`" :cx="cx(hc)" :cy="cy(hr)" r="3"
+            fill="#4a5568" />
 
           <!-- Column labels bottom -->
-          <text v-for="c in tBoardSize" :key="`tclb${c}`"
-            :x="cx(c-1)" :y="cy(tBoardSize-1)+18"
-            text-anchor="middle" dominant-baseline="middle"
-            font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
-            {{ colLabel(c-1) }}</text>
+          <text v-for="c in tBoardSize" :key="`tclb${c}`" :x="cx(c - 1)" :y="cy(tBoardSize - 1) + 18"
+            text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace"
+            style="pointer-events:none">
+            {{ colLabel(c - 1) }}</text>
           <!-- Row labels left -->
-          <text v-for="r in tBoardSize" :key="`trl${r}`"
-            :x="cx(0)-18" :y="cy(r-1)"
-            text-anchor="middle" dominant-baseline="middle"
-            font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+          <text v-for="r in tBoardSize" :key="`trl${r}`" :x="cx(0) - 18" :y="cy(r - 1)" text-anchor="middle"
+            dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
             {{ tBoardSize - r }}</text>
 
           <!-- Choice hint rings + labels -->
-          <g v-for="(ch,idx) in (tPhase==='playing' ? tChoices : [])" :key="`h${ch.r}${ch.c}`"
+          <g v-for="(ch, idx) in (tPhase === 'playing' ? tChoices : [])" :key="`h${ch.r}${ch.c}`"
             @click="tClick(ch.r, ch.c)" style="cursor:pointer">
-            <circle :cx="cx(ch.c)" :cy="tcy(ch.r)" r="12"
-              fill="rgba(96,165,250,0.07)" stroke="rgba(96,165,250,0.5)"
+            <circle :cx="cx(ch.c)" :cy="tcy(ch.r)" r="12" fill="rgba(96,165,250,0.07)" stroke="rgba(96,165,250,0.5)"
               stroke-width="1.5" stroke-dasharray="4 2" class="hint-ring" />
-            <text :x="cx(ch.c)" :y="tcy(ch.r)+4" text-anchor="middle"
-              font-size="10" font-weight="bold" fill="rgba(96,165,250,0.9)"
-              style="pointer-events:none">{{ ['A','B','C'][idx] }}</text>
+            <text :x="cx(ch.c)" :y="tcy(ch.r) + 4" text-anchor="middle" font-size="10" font-weight="bold"
+              fill="rgba(96,165,250,0.9)" style="pointer-events:none">{{ ['A', 'B', 'C'][idx] }}</text>
           </g>
 
           <!-- Stones -->
-          <circle v-for="s in tStones" :key="`${s.r},${s.c},${s.color}`"
-            :cx="cx(s.c)" :cy="tcy(s.r)" r="13"
-            :class="s.color === 'black' ? 'stone-black' : 'stone-white'"
-            :style="(s.color==='black' && tLastB?.r===s.r && tLastB?.c===s.c)
+          <circle v-for="s in tStones" :key="`${s.r},${s.c},${s.color}`" :cx="cx(s.c)" :cy="tcy(s.r)" r="13"
+            :class="s.color === 'black' ? 'stone-black' : 'stone-white'" :style="(s.color === 'black' && tLastB?.r === s.r && tLastB?.c === s.c)
               ? 'filter:drop-shadow(0 0 8px rgba(96,165,250,0.9))'
-              : (s.color==='white' && tLastW?.r===s.r && tLastW?.c===s.c)
-              ? 'filter:drop-shadow(0 0 7px rgba(250,200,80,0.8))' : ''" />
+              : (s.color === 'white' && tLastW?.r === s.r && tLastW?.c === s.c)
+                ? 'filter:drop-shadow(0 0 7px rgba(250,200,80,0.8))' : ''" />
 
           <!-- White response dot marker -->
-          <circle v-if="tLastW && tPhase==='playing'"
-            :cx="cx(tLastW.c)" :cy="tcy(tLastW.r)" r="4"
+          <circle v-if="tLastW && tPhase === 'playing'" :cx="cx(tLastW.c)" :cy="tcy(tLastW.r)" r="4"
             fill="rgba(60,60,60,0.7)" style="pointer-events:none" />
         </svg>
       </div>
 
       <!-- Feedback -->
       <transition name="fade">
-        <div v-if="tPhase !== 'playing'" class="feedback"
-          :class="tPhase === 'complete' ? 'correct' : 'wrong'">
+        <div v-if="tPhase !== 'playing'" class="feedback" :class="tPhase === 'complete' ? 'correct' : 'wrong'">
           <span class="fb-icon">{{ tPhase === 'complete' ? '✅' : '❌' }}</span>
           <div class="fb-body">
             <strong>{{ tPhase === 'complete' ? '正確！' : '再想想！' }}</strong>
@@ -572,15 +1069,13 @@ const LEVEL_COLOR: Record<string, string> = {
 
       <p v-if="tPhase === 'playing'" class="tsumego-hint">
         點擊 <span class="accent">A / B / C</span> 落子
-        <span v-if="tPuzzle.levelSteps > 1">（第 {{ tStep+1 }} / {{ tPuzzle.levelSteps }} 手）</span>
+        <span v-if="tPuzzle.levelSteps > 1">（第 {{ tStep + 1 }} / {{ tPuzzle.levelSteps }} 手）</span>
       </p>
 
       <!-- Puzzle nav -->
       <div class="puzzle-nav">
-        <button v-for="(p,idx) in TSUMEGO_PUZZLES" :key="p.id"
-          class="nav-dot" :class="{ active: idx === tPuzzleIdx }"
-          :style="{ '--dot-color': LEVEL_COLOR[p.levelLabel] }"
-          @click="tGoTo(idx)">{{ idx+1 }}</button>
+        <button v-for="(p, idx) in TSUMEGO_PUZZLES" :key="p.id" class="nav-dot" :class="{ active: idx === tPuzzleIdx }"
+          :style="{ '--dot-color': LEVEL_COLOR[p.levelLabel] }" @click="tGoTo(idx)">{{ idx + 1 }}</button>
       </div>
     </template>
 
@@ -588,84 +1083,357 @@ const LEVEL_COLOR: Record<string, string> = {
 </template>
 
 <style scoped>
-.board-editor { display:flex; flex-direction:column; gap:0.6rem; user-select:none; }
+.board-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  user-select: none;
+}
 
 /* Mode toggle */
-.mode-toggle { display:flex; gap:0.4rem; }
-.mode-btn {
-  flex:1; font-size:0.78rem; padding:0.3rem 0.5rem;
-  border-radius:99px; border:1px solid var(--border);
-  background:transparent; color:var(--text-secondary);
-  cursor:pointer; transition:all .15s;
+.mode-toggle {
+  display: flex;
+  gap: 0.4rem;
 }
-.mode-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(99,102,241,0.08); }
-.mode-btn:hover:not(.active) { border-color:var(--border); color:var(--text-primary); }
+
+.mode-btn {
+  flex: 1;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.mode-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.mode-btn:hover:not(.active) {
+  border-color: var(--border);
+  color: var(--text-primary);
+}
 
 /* Free play toolbar */
-.toolbar { display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }
-.tool-group { display:flex; align-items:center; gap:0.35rem; }
-.tool-label { font-size:0.72rem; color:var(--text-muted); }
-.tool-btn {
-  font-size:0.76rem; padding:0.2rem 0.55rem; border-radius:99px;
-  border:1px solid var(--border); background:transparent;
-  color:var(--text-secondary); cursor:pointer; transition:all .15s;
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
-.tool-btn:hover { border-color:var(--accent); color:var(--accent); }
-.tool-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(99,102,241,0.08); }
-.tool-btn.danger:hover { border-color:#f87171; color:#f87171; }
-.stone-toggle { display:flex; align-items:center; gap:0.35rem; }
-.stone-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
-.stone-dot.black { background:#1c1c1c; border:1px solid #555; }
-.stone-dot.white { background:#e0e0e0; border:1px solid #999; }
-.capture-info { display:flex; gap:1rem; font-size:0.78rem; color:var(--text-muted); }
-.capture-info strong { color:var(--text-secondary); }
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tool-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.tool-btn {
+  font-size: 0.76rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.tool-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tool-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.tool-btn.danger:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+.stone-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stone-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.stone-dot.black {
+  background: #1c1c1c;
+  border: 1px solid #555;
+}
+
+.stone-dot.white {
+  background: #e0e0e0;
+  border: 1px solid #999;
+}
+
+.capture-info {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.capture-info strong {
+  color: var(--text-secondary);
+}
 
 /* Board */
-.board-wrap { width:100%; aspect-ratio:1/1; background:#12122e; border-radius:var(--radius-lg); border:1px solid var(--border); overflow:hidden; }
-.board-svg { display:block; width:100%; height:100%; }
-.stone-black { fill:#1c1c1c; filter:drop-shadow(0 2px 4px rgba(0,0,0,.8)); transition:filter .1s; cursor:pointer; }
-.stone-white { fill:#e8e8e8; filter:drop-shadow(0 2px 3px rgba(0,0,0,.5)); transition:filter .1s; cursor:pointer; }
-.stone-black:hover { filter:drop-shadow(0 0 6px rgba(239,68,68,0.8)); }
-.stone-white:hover { filter:drop-shadow(0 0 6px rgba(239,68,68,0.8)); }
-.cell-target { cursor:pointer; }
-.hint-ring { transition:fill .15s; }
-.hint-ring:hover { fill:rgba(96,165,250,0.2); }
+.board-wrap {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: #12122e;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.board-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.stone-black {
+  fill: #1c1c1c;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .8));
+  transition: filter .1s;
+  cursor: pointer;
+}
+
+.stone-white {
+  fill: #e8e8e8;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .5));
+  transition: filter .1s;
+  cursor: pointer;
+}
+
+.stone-black:hover {
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8));
+}
+
+.stone-white:hover {
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8));
+}
+
+.cell-target {
+  cursor: pointer;
+}
+
+.hint-ring {
+  transition: fill .15s;
+}
+
+.hint-ring:hover {
+  fill: rgba(96, 165, 250, 0.2);
+}
 
 /* Status */
-.status-msg { font-size:0.78rem; color:var(--text-muted); min-height:1.2em; margin:0; }
-.instructions { display:flex; gap:0.75rem; font-size:0.72rem; color:var(--text-muted); flex-wrap:wrap; }
+.status-msg {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-height: 1.2em;
+  margin: 0;
+}
+
+.instructions {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
 
 /* Tsumego */
-.tsumego-header { display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; }
-.tsumego-badge { font-size:0.78rem; font-weight:700; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-transform:uppercase; letter-spacing:0.08em; }
-.t-level { font-size:0.7rem; font-weight:600; border:1px solid; padding:0.1rem 0.5rem; border-radius:99px; }
-.t-title { font-size:0.82rem; color:var(--text-secondary); }
-.tsumego-desc { font-size:0.85rem; color:var(--text-secondary); margin:0; }
-.tsumego-desc strong { color:var(--accent); }
+.tsumego-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
 
-.step-dots { display:flex; gap:6px; align-items:center; }
-.dot { width:8px; height:8px; border-radius:50%; background:var(--border); transition:background .3s,transform .2s; }
-.dot.active { background:var(--accent); }
-.dot.current { background:var(--accent); transform:scale(1.4); }
+.tsumego-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-.feedback { display:flex; align-items:flex-start; gap:0.65rem; padding:0.8rem 0.9rem; border-radius:var(--radius-lg); font-size:0.82rem; line-height:1.5; }
-.feedback.correct { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.3); }
-.feedback.wrong { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); }
-.fb-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.1rem; }
-.fb-body { flex:1; }
-.fb-body strong { display:block; margin-bottom:0.15rem; }
-.fb-body p { color:var(--text-secondary); margin:0; }
-.btn-retry { flex-shrink:0; background:transparent; border:1px solid var(--border); color:var(--text-secondary); padding:0.25rem 0.65rem; border-radius:99px; font-size:0.76rem; cursor:pointer; transition:all .2s; }
-.btn-retry:hover { border-color:var(--accent); color:var(--accent); }
+.t-level {
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid;
+  padding: 0.1rem 0.5rem;
+  border-radius: 99px;
+}
 
-.tsumego-hint { font-size:0.76rem; color:var(--text-muted); text-align:center; margin:0; }
-.accent { color:var(--accent); }
+.t-title {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
 
-.puzzle-nav { display:flex; gap:0.4rem; justify-content:center; }
-.nav-dot { width:26px; height:26px; border-radius:50%; border:1.5px solid var(--border); background:transparent; color:var(--text-muted); font-size:0.72rem; cursor:pointer; transition:all .2s; }
-.nav-dot.active { border-color:var(--dot-color); color:var(--dot-color); background:color-mix(in srgb,var(--dot-color) 12%,transparent); }
-.nav-dot:hover { border-color:var(--dot-color); color:var(--dot-color); }
+.tsumego-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
 
-.fade-enter-active,.fade-leave-active { transition:opacity .3s; }
-.fade-enter-from,.fade-leave-to { opacity:0; }
+.tsumego-desc strong {
+  color: var(--accent);
+}
+
+.step-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background .3s, transform .2s;
+}
+
+.dot.active {
+  background: var(--accent);
+}
+
+.dot.current {
+  background: var(--accent);
+  transform: scale(1.4);
+}
+
+.feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.feedback.correct {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.feedback.wrong {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.fb-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.fb-body {
+  flex: 1;
+}
+
+.fb-body strong {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.fb-body p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.btn-retry {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.btn-retry:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tsumego-hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.puzzle-nav {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.nav-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.nav-dot.active {
+  border-color: var(--dot-color);
+  color: var(--dot-color);
+  background: color-mix(in srgb, var(--dot-color) 12%, transparent);
+}
+
+.nav-dot:hover {
+  border-color: var(--dot-color);
+  color: var(--dot-color);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

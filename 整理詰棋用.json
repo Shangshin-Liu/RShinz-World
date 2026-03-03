@@ -1,0 +1,639 @@
+[
+    {
+        "id": 1,
+        "title": "吃子練習",
+        "goal": "依序完成畫面上題目",
+        "levelLabel": "新手",
+        "levelSteps": 5,
+        "boardSize": 9,
+        "initialStones": [
+            {
+                "r": 0,
+                "c": 0,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 6,
+                "color": "white"
+            },
+            {
+                "r": 0,
+                "c": 7,
+                "color": "white"
+            },
+            {
+                "r": 1,
+                "c": 7,
+                "color": "white"
+            },
+            {
+                "r": 1,
+                "c": 0,
+                "color": "black"
+            },
+            {
+                "r": 0,
+                "c": 3,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 4,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 0,
+                "color": "black"
+            },
+            {
+                "r": 8,
+                "c": 1,
+                "color": "black"
+            },
+            {
+                "r": 6,
+                "c": 1,
+                "color": "black"
+            },
+            {
+                "r": 6,
+                "c": 5,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 6,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 7,
+                "color": "black"
+            },
+            {
+                "r": 5,
+                "c": 6,
+                "color": "black"
+            },
+            {
+                "r": 6,
+                "c": 8,
+                "color": "black"
+            },
+            {
+                "r": 0,
+                "c": 6,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 6,
+                "color": "black"
+            },
+            {
+                "r": 2,
+                "c": 7,
+                "color": "black"
+            },
+            {
+                "r": 2,
+                "c": 8,
+                "color": "black"
+            }
+        ],
+        "firstChoices": [
+            {
+                "r": 0,
+                "c": 1,
+                "isCorrect": true,
+                "whiteReply": {
+                    "r": 0,
+                    "c": 4
+                },
+                "successMsg": "",
+                "nextChoices": [
+                    {
+                        "r": 0,
+                        "c": 5,
+                        "isCorrect": true,
+                        "whiteReply": {
+                            "r": 7,
+                            "c": 1
+                        },
+                        "successMsg": "",
+                        "nextChoices": [
+                            {
+                                "r": 7,
+                                "c": 2,
+                                "isCorrect": true,
+                                "whiteReply": {
+                                    "r": 6,
+                                    "c": 7
+                                },
+                                "successMsg": "",
+                                "nextChoices": [
+                                    {
+                                        "r": 5,
+                                        "c": 7,
+                                        "isCorrect": true,
+                                        "whiteReply": {
+                                            "r": 1,
+                                            "c": 8
+                                        },
+                                        "successMsg": "",
+                                        "nextChoices": [
+                                            {
+                                                "r": 0,
+                                                "c": 8,
+                                                "isCorrect": true,
+                                                "successMsg": "讚讚！你知道怎麼提子了～"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "title": "眼位練習",
+        "goal": "試試看找出眼位",
+        "levelLabel": "新手",
+        "levelSteps": 5,
+        "boardSize": 13,
+        "initialStones": [
+            {
+                "r": 2,
+                "c": 0,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 1,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 2,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 3,
+                "color": "white"
+            },
+            {
+                "r": 0,
+                "c": 4,
+                "color": "white"
+            },
+            {
+                "r": 1,
+                "c": 4,
+                "color": "white"
+            },
+            {
+                "r": 1,
+                "c": 7,
+                "color": "white"
+            },
+            {
+                "r": 0,
+                "c": 7,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 8,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 9,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 10,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 11,
+                "color": "white"
+            },
+            {
+                "r": 2,
+                "c": 12,
+                "color": "white"
+            },
+            {
+                "r": 4,
+                "c": 0,
+                "color": "white"
+            },
+            {
+                "r": 4,
+                "c": 1,
+                "color": "white"
+            },
+            {
+                "r": 5,
+                "c": 2,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 2,
+                "color": "white"
+            },
+            {
+                "r": 7,
+                "c": 3,
+                "color": "white"
+            },
+            {
+                "r": 8,
+                "c": 3,
+                "color": "white"
+            },
+            {
+                "r": 9,
+                "c": 0,
+                "color": "white"
+            },
+            {
+                "r": 9,
+                "c": 1,
+                "color": "white"
+            },
+            {
+                "r": 9,
+                "c": 2,
+                "color": "white"
+            },
+            {
+                "r": 9,
+                "c": 5,
+                "color": "white"
+            },
+            {
+                "r": 8,
+                "c": 5,
+                "color": "white"
+            },
+            {
+                "r": 7,
+                "c": 5,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 6,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 7,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 8,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 9,
+                "color": "white"
+            },
+            {
+                "r": 6,
+                "c": 10,
+                "color": "white"
+            },
+            {
+                "r": 7,
+                "c": 11,
+                "color": "white"
+            },
+            {
+                "r": 8,
+                "c": 11,
+                "color": "white"
+            },
+            {
+                "r": 9,
+                "c": 11,
+                "color": "white"
+            },
+            {
+                "r": 10,
+                "c": 11,
+                "color": "white"
+            },
+            {
+                "r": 11,
+                "c": 10,
+                "color": "white"
+            },            
+            {
+                "r": 11,
+                "c": 9,
+                "color": "white"
+            },
+            {
+                "r": 11,
+                "c": 8,
+                "color": "white"
+            },
+            {
+                "r": 1,
+                "c": 0,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 1,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 2,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 3,
+                "color": "black"
+            },
+            {
+                "r": 0,
+                "c": 3,
+                "color": "black"
+            },
+            {
+                "r": 0,
+                "c": 8,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 8,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 9,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 10,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 11,
+                "color": "black"
+            },
+            {
+                "r": 1,
+                "c": 12,
+                "color": "black"
+            },
+            {
+                "r": 5,
+                "c": 0,
+                "color": "black"
+            },
+            {
+                "r": 5,
+                "c": 1,
+                "color": "black"
+            },
+            {
+                "r": 6,
+                "c": 1,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 2,
+                "color": "black"
+            },
+            {
+                "r": 8,
+                "c": 2,
+                "color": "black"
+            },
+            {
+                "r": 8,
+                "c": 1,
+                "color": "black"
+            },
+            {
+                "r": 8,
+                "c": 0,
+                "color": "black"
+            },
+            {
+                "r": 9,
+                "c": 6,
+                "color": "black"
+            },
+            {
+                "r": 9,
+                "c": 7,
+                "color": "black"
+            },
+            {
+                "r": 10,
+                "c": 8,
+                "color": "black"
+            },
+            {
+                "r": 10,
+                "c": 9,
+                "color": "black"
+            },
+            {
+                "r": 10,
+                "c": 10,
+                "color": "black"
+            },
+            {
+                "r": 9,
+                "c": 10,
+                "color": "black"
+            },
+            {
+                "r": 8,
+                "c": 10,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 10,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 9,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 8,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 7,
+                "color": "black"
+            },
+            {
+                "r": 7,
+                "c": 6,
+                "color": "black"
+            },
+            {
+                "r": 8,
+                "c": 6,
+                "color": "black"
+            }
+        ],
+        "firstChoices": [
+            {
+                "r": 0,
+                "c": 1,
+                "isCorrect": true,
+                "successMsg": "正中紅心，有兩隻眼睛即兩邊都是禁手點，白棋殺不掉囉！",
+                "nextChoices": [
+                    {
+                        "r": 0,
+                        "c": 10,
+                        "isCorrect": true,
+                        "whiteReply": {
+                            "r": 0,
+                            "c": 11
+                        },
+                        "successMsg": "已成功做出眼睛，白棋就算落子也不可能緊住所有黑棋的氣。此外黑棋下(0,11)也可以有一樣的效果",
+                        "nextChoices": [
+                            {
+                                "r": 7,
+                                "c": 0,
+                                "isCorrect": true,
+                                "successMsg": "再次命中紅心~下在這裡形成兩隻眼睛後，白棋兩邊都是禁手點已無法殺死黑棋(灑花)",
+                                "nextChoices": [
+                                    {
+                                        "r": 9,
+                                        "c": 8,
+                                        "isCorrect": true,
+                                        "whiteReply": {
+                                            "r": 8,
+                                            "c": 8
+                                        },
+                                        "successMsg": "",
+                                        "nextChoices": [
+                                            {
+                                                "r": 8,
+                                                "c": 9,
+                                                "isCorrect": true,
+                                                "successMsg": "我的天哪~你完全懂了，圍棋不難齁!! (但其實這裡有更好的答案...)"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "r": 8,
+                                        "c": 8,
+                                        "isCorrect": true,
+                                        "successMsg": "能直接下在真是太厲害了，這真真正正是完美解答R!"
+                                    },
+                                    {
+                                        "r": 8,
+                                        "c": 7,
+                                        "isCorrect": false,
+                                        "wrongMsg": "照這個下法原本活的都完蛋了 嗚嗚嗚~我演示給你看",
+                                        "whiteReply": {
+                                            "r": 8,
+                                            "c": 8
+                                        },
+                                        "nextChoices": [
+                                            {
+                                                "r": 9,
+                                                "c": 8,
+                                                "isCorrect": false,
+                                                "wrongMsg": "no use"
+                                            },
+                                            {
+                                                "r": 8,
+                                                "c": 9,
+                                                "isCorrect": false,
+                                                "wrongMsg": "no use"
+                                            },
+                                            {
+                                                "r": 9,
+                                                "c": 9,
+                                                "isCorrect": false,
+                                                "whiteReply": {
+                                                    "r": 9,
+                                                    "c": 8
+                                                },
+                                                "wrongMsg": "看似可以抵抗但...不妙",
+                                                "nextChoices": [
+                                                    {
+                                                        "r": 4,
+                                                        "c": 6,
+                                                        "isCorrect": false,
+                                                        "whiteReply": {
+                                                            "r": 8,
+                                                            "c": 9
+                                                        },
+                                                        "wrongMsg": "都被吃掉了，問題不大可以重來^O^"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "r": 6,
+                                "c": 0,
+                                "isCorrect": false,
+                                "wrongMsg": "沒有眼會被吃掉的QQ"
+                            }
+                        ]
+                    },
+                    {
+                        "r": 0,
+                        "c": 9,
+                        "isCorrect": false,
+                        "whiteReply": {
+                            "r": 0,
+                            "c": 11
+                        },
+                        "wrongMsg": "本來是活型這樣下可就反而讓白棋可以破眼了 oh~不"
+                    }
+                ]
+            },
+            {
+                "r": 0,
+                "c": 0,
+                "isCorrect": false,
+                "whiteReply": {
+                    "r": 0,
+                    "c": 1
+                },
+                "wrongMsg": "沒有眼會被吃掉的QQ"
+            }
+        ]
+    }
+]
