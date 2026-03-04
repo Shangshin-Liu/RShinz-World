@@ -728,47 +728,11 @@ const TSUMEGO_PUZZLES: TsumegoData[] = [
                     "r": 8,
                     "c": 7,
                     "isCorrect": false,
-                    "wrongMsg": "照這個下法原本活的都完蛋了 嗚嗚嗚~我演示給你看",
+                    "wrongMsg": "照這個下法原本活的都完蛋了 嗚嗚嗚",
                     "whiteReply": {
                       "r": 8,
                       "c": 8
-                    },
-                    "nextChoices": [
-                      {
-                        "r": 9,
-                        "c": 8,
-                        "isCorrect": false,
-                        "wrongMsg": "no use"
-                      },
-                      {
-                        "r": 8,
-                        "c": 9,
-                        "isCorrect": false,
-                        "wrongMsg": "no use"
-                      },
-                      {
-                        "r": 9,
-                        "c": 9,
-                        "isCorrect": false,
-                        "whiteReply": {
-                          "r": 9,
-                          "c": 8
-                        },
-                        "wrongMsg": "看似可以抵抗但...不妙",
-                        "nextChoices": [
-                          {
-                            "r": 4,
-                            "c": 6,
-                            "isCorrect": false,
-                            "whiteReply": {
-                              "r": 8,
-                              "c": 9
-                            },
-                            "wrongMsg": "都被吃掉了，問題不大可以重來^O^"
-                          }
-                        ]
-                      }
-                    ]
+                    }
                   }
                 ]
               },
@@ -850,8 +814,26 @@ function tClick(userR: number, c: number) {
       tStones.value = result.map(s => ({ ...s, r: toUserR(s.r, size) }))
     }
     tLastB.value = { r: userR, c }
-    tMsg.value = choice.wrongMsg ?? '再想想！'
-    tPhase.value = 'wrong'
+
+    if (choice.whiteReply) {
+      const wr = choice.whiteReply
+      tChoices.value = []
+      let cur = tEngineStones.value
+      setTimeout(() => {
+        const wrSvgR = toSvgR(wr.r, size)
+        const afterWhite = placeAndCapture(cur, wrSvgR, wr.c, 'white', size)
+        if (afterWhite) {
+          tEngineStones.value = afterWhite
+          tStones.value = afterWhite.map(s => ({ ...s, r: toUserR(s.r, size) }))
+          tLastW.value = { r: wr.r, c: wr.c }
+        }
+        tMsg.value = choice.wrongMsg ?? '再想想！'
+        tPhase.value = 'wrong'
+      }, 1000)
+    } else {
+      tMsg.value = choice.wrongMsg ?? '再想想！'
+      tPhase.value = 'wrong'
+    }
     return
   }
 
@@ -911,9 +893,9 @@ function switchMode(m: 'free' | 'tsumego') {
 }
 
 const LEVEL_COLOR: Record<string, string> = {
-  '初級 1手': '#4ade80',
-  '中級 2手': '#facc15',
-  '高級 3手': '#f87171',
+  '新手': '#4ade80',
+  '中級': '#facc15',
+  '高級': '#f87171',
 }
 </script>
 
