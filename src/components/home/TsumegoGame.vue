@@ -1,5 +1,6 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue'
+﻿<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useTsumegoData, type MoveChoice } from '@/composables/useTsumegoData'
 
 // ── Types ────────────────────────────────────────────────────────────
 type Color = 'black' | 'white'
@@ -128,651 +129,24 @@ function changeSize(size: BoardSize) {
   clearBoard()
 }
 
-// ── Tsumego Data ──────────────────────────────────────────────────────
-// ★ 在此修改或新增題目 ★
-// MoveChoice 結構：
-//   r,c: 位置；isCorrect: 是否正確答案
-//   wrongMsg: 答錯說明；whiteReply: 白棋回應位置；nextChoices: 下一步三選項
-interface MoveChoice {
-  r: number; c: number
-  isCorrect: boolean
-  wrongMsg?: string
-  whiteReply?: { r: number; c: number }   // 答對後白棋的回應
-  nextChoices?: MoveChoice[]               // 下一手的三個選項
-  successMsg?: string                      // 最終正確時的訊息
-}
-interface TsumegoData {
-  id: number
-  title: string
-  goal: string
-  levelLabel: string
-  levelSteps: number
-  boardSize: BoardSize
-  initialStones: Stone[]
-  firstChoices: MoveChoice[]
-}
+// ── Tsumego Data（從 GAS / 本地 fallback 抓取） ────────────────────────
+const { puzzles: tPuzzles, loading: tLoading, fetchPuzzles } = useTsumegoData()
 
 // 座標系統：c = X（0=左→右遞增），r = Y（0=底部→上遞增）
 // 引擎內部自動轉換為 SVG row（tcy 函式處理）
-const TSUMEGO_PUZZLES: TsumegoData[] = [
-  {
-    "id": 1,
-    "title": "吃子練習",
-    "goal": "依序完成畫面上題目",
-    "levelLabel": "新手",
-    "levelSteps": 5,
-    "boardSize": 9,
-    "initialStones": [
-      {
-        "r": 0,
-        "c": 0,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 6,
-        "color": "white"
-      },
-      {
-        "r": 0,
-        "c": 7,
-        "color": "white"
-      },
-      {
-        "r": 1,
-        "c": 7,
-        "color": "white"
-      },
-      {
-        "r": 1,
-        "c": 0,
-        "color": "black"
-      },
-      {
-        "r": 0,
-        "c": 3,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 4,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 0,
-        "color": "black"
-      },
-      {
-        "r": 8,
-        "c": 1,
-        "color": "black"
-      },
-      {
-        "r": 6,
-        "c": 1,
-        "color": "black"
-      },
-      {
-        "r": 6,
-        "c": 5,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 6,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 7,
-        "color": "black"
-      },
-      {
-        "r": 5,
-        "c": 6,
-        "color": "black"
-      },
-      {
-        "r": 6,
-        "c": 8,
-        "color": "black"
-      },
-      {
-        "r": 0,
-        "c": 6,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 6,
-        "color": "black"
-      },
-      {
-        "r": 2,
-        "c": 7,
-        "color": "black"
-      },
-      {
-        "r": 2,
-        "c": 8,
-        "color": "black"
-      }
-    ],
-    "firstChoices": [
-      {
-        "r": 0,
-        "c": 1,
-        "isCorrect": true,
-        "whiteReply": {
-          "r": 0,
-          "c": 4
-        },
-        "successMsg": "",
-        "nextChoices": [
-          {
-            "r": 0,
-            "c": 5,
-            "isCorrect": true,
-            "whiteReply": {
-              "r": 7,
-              "c": 1
-            },
-            "successMsg": "",
-            "nextChoices": [
-              {
-                "r": 7,
-                "c": 2,
-                "isCorrect": true,
-                "whiteReply": {
-                  "r": 6,
-                  "c": 7
-                },
-                "successMsg": "",
-                "nextChoices": [
-                  {
-                    "r": 5,
-                    "c": 7,
-                    "isCorrect": true,
-                    "whiteReply": {
-                      "r": 1,
-                      "c": 8
-                    },
-                    "successMsg": "",
-                    "nextChoices": [
-                      {
-                        "r": 0,
-                        "c": 8,
-                        "isCorrect": true,
-                        "successMsg": "讚讚！你知道怎麼提子了～"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": 2,
-    "title": "眼位練習",
-    "goal": "試試看找出眼位",
-    "levelLabel": "新手",
-    "levelSteps": 5,
-    "boardSize": 13,
-    "initialStones": [
-      {
-        "r": 2,
-        "c": 0,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 1,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 2,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 3,
-        "color": "white"
-      },
-      {
-        "r": 0,
-        "c": 4,
-        "color": "white"
-      },
-      {
-        "r": 1,
-        "c": 4,
-        "color": "white"
-      },
-      {
-        "r": 1,
-        "c": 7,
-        "color": "white"
-      },
-      {
-        "r": 0,
-        "c": 7,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 8,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 9,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 10,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 11,
-        "color": "white"
-      },
-      {
-        "r": 2,
-        "c": 12,
-        "color": "white"
-      },
-      {
-        "r": 4,
-        "c": 0,
-        "color": "white"
-      },
-      {
-        "r": 4,
-        "c": 1,
-        "color": "white"
-      },
-      {
-        "r": 5,
-        "c": 2,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 2,
-        "color": "white"
-      },
-      {
-        "r": 7,
-        "c": 3,
-        "color": "white"
-      },
-      {
-        "r": 8,
-        "c": 3,
-        "color": "white"
-      },
-      {
-        "r": 9,
-        "c": 0,
-        "color": "white"
-      },
-      {
-        "r": 9,
-        "c": 1,
-        "color": "white"
-      },
-      {
-        "r": 9,
-        "c": 2,
-        "color": "white"
-      },
-      {
-        "r": 9,
-        "c": 5,
-        "color": "white"
-      },
-      {
-        "r": 8,
-        "c": 5,
-        "color": "white"
-      },
-      {
-        "r": 7,
-        "c": 5,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 6,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 7,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 8,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 9,
-        "color": "white"
-      },
-      {
-        "r": 6,
-        "c": 10,
-        "color": "white"
-      },
-      {
-        "r": 7,
-        "c": 11,
-        "color": "white"
-      },
-      {
-        "r": 8,
-        "c": 11,
-        "color": "white"
-      },
-      {
-        "r": 9,
-        "c": 11,
-        "color": "white"
-      },
-      {
-        "r": 10,
-        "c": 11,
-        "color": "white"
-      },
-      {
-        "r": 11,
-        "c": 10,
-        "color": "white"
-      },
-      {
-        "r": 11,
-        "c": 9,
-        "color": "white"
-      },
-      {
-        "r": 11,
-        "c": 8,
-        "color": "white"
-      },
-      {
-        "r": 10,
-        "c": 7,
-        "color": "white"
-      },
-      {
-        "r": 10,
-        "c": 6,
-        "color": "white"
-      },
 
+onMounted(() => {
+  tInit() // fallback 資料已同步可用，立即初始化
+  fetchPuzzles().then(() => {
+    // GAS 有更新資料時，若還在第 0 題就重 init
+    if (tPuzzleIdx.value === 0) tInit()
+  })
+})
 
-      {
-        "r": 1,
-        "c": 0,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 1,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 2,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 3,
-        "color": "black"
-      },
-      {
-        "r": 0,
-        "c": 3,
-        "color": "black"
-      },
-      {
-        "r": 0,
-        "c": 8,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 8,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 9,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 10,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 11,
-        "color": "black"
-      },
-      {
-        "r": 1,
-        "c": 12,
-        "color": "black"
-      },
-      {
-        "r": 5,
-        "c": 0,
-        "color": "black"
-      },
-      {
-        "r": 5,
-        "c": 1,
-        "color": "black"
-      },
-      {
-        "r": 6,
-        "c": 1,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 2,
-        "color": "black"
-      },
-      {
-        "r": 8,
-        "c": 2,
-        "color": "black"
-      },
-      {
-        "r": 8,
-        "c": 1,
-        "color": "black"
-      },
-      {
-        "r": 8,
-        "c": 0,
-        "color": "black"
-      },
-      {
-        "r": 9,
-        "c": 6,
-        "color": "black"
-      },
-      {
-        "r": 9,
-        "c": 7,
-        "color": "black"
-      },
-      {
-        "r": 10,
-        "c": 8,
-        "color": "black"
-      },
-      {
-        "r": 10,
-        "c": 9,
-        "color": "black"
-      },
-      {
-        "r": 10,
-        "c": 10,
-        "color": "black"
-      },
-      {
-        "r": 9,
-        "c": 10,
-        "color": "black"
-      },
-      {
-        "r": 8,
-        "c": 10,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 10,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 9,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 8,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 7,
-        "color": "black"
-      },
-      {
-        "r": 7,
-        "c": 6,
-        "color": "black"
-      },
-      {
-        "r": 8,
-        "c": 6,
-        "color": "black"
-      }
-    ],
-    "firstChoices": [
-      {
-        "r": 0,
-        "c": 1,
-        "isCorrect": true,
-        "successMsg": "正中紅心，有兩隻眼睛即兩邊都是禁手點，白棋殺不掉囉！",
-        "nextChoices": [
-          {
-            "r": 0,
-            "c": 10,
-            "isCorrect": true,
-            "whiteReply": {
-              "r": 0,
-              "c": 11
-            },
-            "successMsg": "已成功做出眼睛，白棋就算落子也不可能緊住所有黑棋的氣。此外黑棋下(0,11)也可以有一樣的效果",
-            "nextChoices": [
-              {
-                "r": 7,
-                "c": 0,
-                "isCorrect": true,
-                "successMsg": "再次命中紅心~下在這裡形成兩隻眼睛後，白棋兩邊都是禁手點已無法殺死黑棋(灑花)",
-                "nextChoices": [
-                  {
-                    "r": 9,
-                    "c": 8,
-                    "isCorrect": true,
-                    "whiteReply": {
-                      "r": 8,
-                      "c": 8
-                    },
-                    "successMsg": "",
-                    "nextChoices": [
-                      {
-                        "r": 8,
-                        "c": 9,
-                        "isCorrect": true,
-                        "successMsg": "我的天哪~你完全懂了，圍棋不難齁!! (但其實這裡有更好的答案...)"
-                      }
-                    ]
-                  },
-                  {
-                    "r": 8,
-                    "c": 8,
-                    "isCorrect": true,
-                    "successMsg": "能直接下在真是太厲害了，這真真正正是完美解答R!"
-                  },
-                  {
-                    "r": 8,
-                    "c": 7,
-                    "isCorrect": false,
-                    "wrongMsg": "照這個下法原本活的都完蛋了 嗚嗚嗚",
-                    "whiteReply": {
-                      "r": 8,
-                      "c": 8
-                    }
-                  }
-                ]
-              },
-              {
-                "r": 6,
-                "c": 0,
-                "isCorrect": false,
-                "wrongMsg": "沒有眼會被吃掉的QQ"
-              }
-            ]
-          },
-          {
-            "r": 0,
-            "c": 9,
-            "isCorrect": false,
-            "whiteReply": {
-              "r": 0,
-              "c": 11
-            },
-            "wrongMsg": "本來是活型這樣下可就反而讓白棋可以破眼了 oh~不"
-          }
-        ]
-      },
-      {
-        "r": 0,
-        "c": 0,
-        "isCorrect": false,
-        "whiteReply": {
-          "r": 0,
-          "c": 1
-        },
-        "wrongMsg": "沒有眼會被吃掉的QQ"
-      }
-    ]
-  }
-]
 
 // ── Tsumego State ──────────────────────────────────────────────────────
 const tPuzzleIdx = ref(0)
-const tPuzzle = computed(() => TSUMEGO_PUZZLES[tPuzzleIdx.value])
+const tPuzzle = computed(() => tPuzzles.value[tPuzzleIdx.value])
 const tBoardSize = computed(() => tPuzzle.value.boardSize)
 const tStones = ref<Stone[]>([])
 /** 引擎內部使用 SVG rowﾈ0=頂部） */
@@ -789,7 +163,7 @@ function tInit() {
   const size = tPuzzle.value.boardSize
   // 儲存使用者座標，tcy() 直接使用
   tStones.value = tPuzzle.value.initialStones.map(s => ({ ...s }))
-  tChoices.value = tPuzzle.value.firstChoices
+  tChoices.value = tPuzzle.value.firstChoices as MoveChoice[]
   // 預先建立 SVG座標版本的初始石陣存入內部引擎 buffer
   tEngineStones.value = tPuzzle.value.initialStones.map(s => ({ ...s, r: toSvgR(s.r, size) }))
   tPhase.value = 'playing'
@@ -798,7 +172,7 @@ function tInit() {
   tLastB.value = null
   tLastW.value = null
 }
-tInit()
+
 
 function tClick(userR: number, c: number) {
   if (tPhase.value !== 'playing') return
@@ -977,88 +351,98 @@ const LEVEL_COLOR: Record<string, string> = {
 
     <!-- ── TSUMEGO MODE ── -->
     <template v-else>
-      <!-- Puzzle header -->
-      <div class="tsumego-header">
-        <span class="tsumego-badge">⚫ 詰棋挑戰</span>
-        <span class="t-level"
-          :style="{ borderColor: LEVEL_COLOR[tPuzzle.levelLabel], color: LEVEL_COLOR[tPuzzle.levelLabel] }">
-          {{ tPuzzle.levelLabel }}
-        </span>
-        <span class="t-title">{{ tPuzzle.title }}</span>
+      <!-- Loading state -->
+      <div v-if="tLoading" class="t-loading">
+        <div class="t-spinner" />
+        <p>載入題目中...</p>
       </div>
 
-      <p class="tsumego-desc"><strong>{{ tPuzzle.goal }}</strong></p>
-
-      <!-- Step dots -->
-      <div class="step-dots" v-if="tPuzzle.levelSteps > 1">
-        <span v-for="i in tPuzzle.levelSteps" :key="i" class="dot"
-          :class="{ active: i - 1 < tStep, current: i - 1 === tStep && tPhase === 'playing' }" />
-      </div>
-
-      <!-- Board -->
-      <div class="board-wrap">
-        <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%" preserveAspectRatio="xMidYMid meet" class="board-svg">
-          <line v-for="r in tBoardSize" :key="`hr${r}`" :x1="cx(0)" :y1="cy(r - 1)" :x2="cx(tBoardSize - 1)"
-            :y2="cy(r - 1)" stroke="#3a4060" stroke-width="1" />
-          <line v-for="c in tBoardSize" :key="`vc${c}`" :x1="cx(c - 1)" :y1="cy(0)" :x2="cx(c - 1)"
-            :y2="cy(tBoardSize - 1)" stroke="#3a4060" stroke-width="1" />
-          <circle v-for="([hr, hc], i) in HOSHI[tBoardSize]" :key="`h${i}`" :cx="cx(hc)" :cy="cy(hr)" r="3"
-            fill="#4a5568" />
-
-          <!-- Column labels bottom -->
-          <text v-for="c in tBoardSize" :key="`tclb${c}`" :x="cx(c - 1)" :y="cy(tBoardSize - 1) + 18"
-            text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace"
-            style="pointer-events:none">
-            {{ colLabel(c - 1) }}</text>
-          <!-- Row labels left -->
-          <text v-for="r in tBoardSize" :key="`trl${r}`" :x="cx(0) - 18" :y="cy(r - 1)" text-anchor="middle"
-            dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
-            {{ tBoardSize - r }}</text>
-
-          <!-- Choice hint rings + labels -->
-          <g v-for="(ch, idx) in (tPhase === 'playing' ? tChoices : [])" :key="`h${ch.r}${ch.c}`"
-            @click="tClick(ch.r, ch.c)" style="cursor:pointer">
-            <circle :cx="cx(ch.c)" :cy="tcy(ch.r)" r="12" fill="rgba(96,165,250,0.07)" stroke="rgba(96,165,250,0.5)"
-              stroke-width="1.5" stroke-dasharray="4 2" class="hint-ring" />
-            <text :x="cx(ch.c)" :y="tcy(ch.r) + 4" text-anchor="middle" font-size="10" font-weight="bold"
-              fill="rgba(96,165,250,0.9)" style="pointer-events:none">{{ ['A', 'B', 'C'][idx] }}</text>
-          </g>
-
-          <!-- Stones -->
-          <circle v-for="s in tStones" :key="`${s.r},${s.c},${s.color}`" :cx="cx(s.c)" :cy="tcy(s.r)" r="13"
-            :class="s.color === 'black' ? 'stone-black' : 'stone-white'" :style="(s.color === 'black' && tLastB?.r === s.r && tLastB?.c === s.c)
-              ? 'filter:drop-shadow(0 0 8px rgba(96,165,250,0.9))'
-              : (s.color === 'white' && tLastW?.r === s.r && tLastW?.c === s.c)
-                ? 'filter:drop-shadow(0 0 7px rgba(250,200,80,0.8))' : ''" />
-
-          <!-- White response dot marker -->
-          <circle v-if="tLastW && tPhase === 'playing'" :cx="cx(tLastW.c)" :cy="tcy(tLastW.r)" r="4"
-            fill="rgba(60,60,60,0.7)" style="pointer-events:none" />
-        </svg>
-      </div>
-
-      <!-- Feedback -->
-      <transition name="fade">
-        <div v-if="tPhase !== 'playing'" class="feedback" :class="tPhase === 'complete' ? 'correct' : 'wrong'">
-          <span class="fb-icon">{{ tPhase === 'complete' ? '✅' : '❌' }}</span>
-          <div class="fb-body">
-            <strong>{{ tPhase === 'complete' ? '正確！' : '再想想！' }}</strong>
-            <p>{{ tMsg }}</p>
-          </div>
-          <button class="btn-retry" @click="tRetry">↩ 重試</button>
+      <template v-else>
+        <!-- Puzzle header -->
+        <div class="tsumego-header">
+          <span class="tsumego-badge">⚫ 詰棋挑戰</span>
+          <span class="t-level"
+            :style="{ borderColor: LEVEL_COLOR[tPuzzle.levelLabel], color: LEVEL_COLOR[tPuzzle.levelLabel] }">
+            {{ tPuzzle.levelLabel }}
+          </span>
+          <span class="t-title">{{ tPuzzle.title }}</span>
         </div>
-      </transition>
 
-      <p v-if="tPhase === 'playing'" class="tsumego-hint">
-        點擊 <span class="accent">A / B / C</span> 落子
-        <span v-if="tPuzzle.levelSteps > 1">（第 {{ tStep + 1 }} / {{ tPuzzle.levelSteps }} 手）</span>
-      </p>
+        <p class="tsumego-desc"><strong>{{ tPuzzle.goal }}</strong></p>
 
-      <!-- Puzzle nav -->
-      <div class="puzzle-nav">
-        <button v-for="(p, idx) in TSUMEGO_PUZZLES" :key="p.id" class="nav-dot" :class="{ active: idx === tPuzzleIdx }"
-          :style="{ '--dot-color': LEVEL_COLOR[p.levelLabel] }" @click="tGoTo(idx)">{{ idx + 1 }}</button>
-      </div>
+        <!-- Step dots -->
+        <div class="step-dots" v-if="tPuzzle.levelSteps > 1">
+          <span v-for="i in tPuzzle.levelSteps" :key="i" class="dot"
+            :class="{ active: i - 1 < tStep, current: i - 1 === tStep && tPhase === 'playing' }" />
+        </div>
+
+        <!-- Board -->
+        <div class="board-wrap">
+          <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%" preserveAspectRatio="xMidYMid meet"
+            class="board-svg">
+            <line v-for="r in tBoardSize" :key="`hr${r}`" :x1="cx(0)" :y1="cy(r - 1)" :x2="cx(tBoardSize - 1)"
+              :y2="cy(r - 1)" stroke="#3a4060" stroke-width="1" />
+            <line v-for="c in tBoardSize" :key="`vc${c}`" :x1="cx(c - 1)" :y1="cy(0)" :x2="cx(c - 1)"
+              :y2="cy(tBoardSize - 1)" stroke="#3a4060" stroke-width="1" />
+            <circle v-for="([hr, hc], i) in (HOSHI[tBoardSize as 9 | 13] ?? [])" :key="`h${i}`" :cx="cx(hc)"
+              :cy="cy(hr)" r="3" fill="#4a5568" />
+
+            <!-- Column labels bottom -->
+            <text v-for="c in tBoardSize" :key="`tclb${c}`" :x="cx(c - 1)" :y="cy(tBoardSize - 1) + 18"
+              text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace"
+              style="pointer-events:none">
+              {{ colLabel(c - 1) }}</text>
+            <!-- Row labels left -->
+            <text v-for="r in tBoardSize" :key="`trl${r}`" :x="cx(0) - 18" :y="cy(r - 1)" text-anchor="middle"
+              dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace"
+              style="pointer-events:none">
+              {{ tBoardSize - r }}</text>
+
+            <!-- Choice hint rings + labels -->
+            <g v-for="(ch, idx) in (tPhase === 'playing' ? tChoices : [])" :key="`h${ch.r}${ch.c}`"
+              @click="tClick(ch.r, ch.c)" style="cursor:pointer">
+              <circle :cx="cx(ch.c)" :cy="tcy(ch.r)" r="12" fill="rgba(96,165,250,0.07)" stroke="rgba(96,165,250,0.5)"
+                stroke-width="1.5" stroke-dasharray="4 2" class="hint-ring" />
+              <text :x="cx(ch.c)" :y="tcy(ch.r) + 4" text-anchor="middle" font-size="10" font-weight="bold"
+                fill="rgba(96,165,250,0.9)" style="pointer-events:none">{{ ['A', 'B', 'C'][idx] }}</text>
+            </g>
+
+            <!-- Stones -->
+            <circle v-for="s in tStones" :key="`${s.r},${s.c},${s.color}`" :cx="cx(s.c)" :cy="tcy(s.r)" r="13"
+              :class="s.color === 'black' ? 'stone-black' : 'stone-white'" :style="(s.color === 'black' && tLastB?.r === s.r && tLastB?.c === s.c)
+                ? 'filter:drop-shadow(0 0 8px rgba(96,165,250,0.9))'
+                : (s.color === 'white' && tLastW?.r === s.r && tLastW?.c === s.c)
+                  ? 'filter:drop-shadow(0 0 7px rgba(250,200,80,0.8))' : ''" />
+
+            <!-- White response dot marker -->
+            <circle v-if="tLastW && tPhase === 'playing'" :cx="cx(tLastW.c)" :cy="tcy(tLastW.r)" r="4"
+              fill="rgba(60,60,60,0.7)" style="pointer-events:none" />
+          </svg>
+        </div>
+
+        <!-- Feedback -->
+        <transition name="fade">
+          <div v-if="tPhase !== 'playing'" class="feedback" :class="tPhase === 'complete' ? 'correct' : 'wrong'">
+            <span class="fb-icon">{{ tPhase === 'complete' ? '✅' : '❌' }}</span>
+            <div class="fb-body">
+              <strong>{{ tPhase === 'complete' ? '正確！' : '再想想！' }}</strong>
+              <p>{{ tMsg }}</p>
+            </div>
+            <button class="btn-retry" @click="tRetry">↩ 重試</button>
+          </div>
+        </transition>
+
+        <p v-if="tPhase === 'playing'" class="tsumego-hint">
+          點擊 <span class="accent">A / B / C</span> 落子
+          <span v-if="tPuzzle.levelSteps > 1">（第 {{ tStep + 1 }} / {{ tPuzzle.levelSteps }} 手）</span>
+        </p>
+
+        <!-- Puzzle nav -->
+        <div class="puzzle-nav">
+          <button v-for="(p, idx) in tPuzzles" :key="p.id" class="nav-dot" :class="{ active: idx === tPuzzleIdx }"
+            :style="{ '--dot-color': LEVEL_COLOR[p.levelLabel] }" @click="tGoTo(idx)">{{ idx + 1 }}</button>
+        </div>
+      </template>
     </template>
 
   </div>
@@ -1417,5 +801,31 @@ const LEVEL_COLOR: Record<string, string> = {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.t-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.t-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
