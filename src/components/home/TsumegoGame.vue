@@ -314,18 +314,18 @@ const LEVEL_COLOR: Record<string, string> = {
         <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%" preserveAspectRatio="xMidYMid meet" class="board-svg"
           @contextmenu.prevent>
           <line v-for="r in boardSize" :key="`hr${r}`" :x1="cx(0)" :y1="cy(r - 1)" :x2="cx(boardSize - 1)"
-            :y2="cy(r - 1)" stroke="#3a4060" stroke-width="1" />
+            :y2="cy(r - 1)" stroke="#2c1608" stroke-width="1" />
           <line v-for="c in boardSize" :key="`vc${c}`" :x1="cx(c - 1)" :y1="cy(0)" :x2="cx(c - 1)"
-            :y2="cy(boardSize - 1)" stroke="#3a4060" stroke-width="1" />
+            :y2="cy(boardSize - 1)" stroke="#2c1608" stroke-width="1" />
           <circle v-for="([hr, hc], i) in HOSHI[boardSize]" :key="`h${i}`" :cx="cx(hc)" :cy="cy(hr)" r="3"
-            fill="#4a5568" />
+            fill="#2c1608" />
           <!-- Column labels bottom -->
           <text v-for="c in boardSize" :key="`clb${c}`" :x="cx(c - 1)" :y="cy(boardSize - 1) + 18" text-anchor="middle"
-            dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+            dominant-baseline="middle" font-size="9" fill="#3a1e08" font-family="monospace" style="pointer-events:none">
             {{ colLabel(c - 1) }}</text>
           <!-- Row labels left -->
           <text v-for="r in boardSize" :key="`rl${r}`" :x="cx(0) - 18" :y="cy(r - 1)" text-anchor="middle"
-            dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace" style="pointer-events:none">
+            dominant-baseline="middle" font-size="9" fill="#3a1e08" font-family="monospace" style="pointer-events:none">
             {{ rowLabel(r - 1) }}</text>
           <!-- Clickable cells -->
           <g v-for="r in boardSize" :key="`row${r}`">
@@ -381,20 +381,20 @@ const LEVEL_COLOR: Record<string, string> = {
           <svg :viewBox="`0 0 ${svgSize} ${svgSize}`" width="100%" preserveAspectRatio="xMidYMid meet"
             class="board-svg">
             <line v-for="r in tBoardSize" :key="`hr${r}`" :x1="cx(0)" :y1="cy(r - 1)" :x2="cx(tBoardSize - 1)"
-              :y2="cy(r - 1)" stroke="#3a4060" stroke-width="1" />
+              :y2="cy(r - 1)" stroke="#2c1608" stroke-width="1" />
             <line v-for="c in tBoardSize" :key="`vc${c}`" :x1="cx(c - 1)" :y1="cy(0)" :x2="cx(c - 1)"
-              :y2="cy(tBoardSize - 1)" stroke="#3a4060" stroke-width="1" />
+              :y2="cy(tBoardSize - 1)" stroke="#2c1608" stroke-width="1" />
             <circle v-for="([hr, hc], i) in (HOSHI[tBoardSize as 9 | 13] ?? [])" :key="`h${i}`" :cx="cx(hc)"
-              :cy="cy(hr)" r="3" fill="#4a5568" />
+              :cy="cy(hr)" r="3" fill="#2c1608" />
 
             <!-- Column labels bottom -->
             <text v-for="c in tBoardSize" :key="`tclb${c}`" :x="cx(c - 1)" :y="cy(tBoardSize - 1) + 18"
-              text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace"
+              text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#3a1e08" font-family="monospace"
               style="pointer-events:none">
               {{ colLabel(c - 1) }}</text>
             <!-- Row labels left -->
             <text v-for="r in tBoardSize" :key="`trl${r}`" :x="cx(0) - 18" :y="cy(r - 1)" text-anchor="middle"
-              dominant-baseline="middle" font-size="9" fill="#5a637a" font-family="monospace"
+              dominant-baseline="middle" font-size="9" fill="#3a1e08" font-family="monospace"
               style="pointer-events:none">
               {{ tBoardSize - r }}</text>
 
@@ -569,9 +569,10 @@ const LEVEL_COLOR: Record<string, string> = {
 .board-wrap {
   width: 100%;
   aspect-ratio: 1/1;
-  background: #12122e;
+  background: linear-gradient(160deg, #a8743a 0%, #8c5e28 50%, #9e6c34 100%);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  border: 2px solid #5c3a14;
+  box-shadow: inset 0 0 50px rgba(20, 8, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
 
