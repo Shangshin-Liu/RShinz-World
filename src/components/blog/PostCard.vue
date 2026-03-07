@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 
+import { Code, BookOpen, Layers, Terminal, Coffee, Briefcase, Bug, Folder, Tag } from 'lucide-vue-next'
+
 interface Props {
   title: string
+  categoryId: string
   category: string
   tags: string[]
   date: string
@@ -10,6 +13,20 @@ interface Props {
 }
 
 defineProps<Props>()
+
+const categoryIcons = {
+  'tech': Code,
+  'tutorial': BookOpen,
+  'architecture': Layers,
+  'devops': Terminal,
+  'life': Coffee,
+  'career': Briefcase,
+  'test': Bug
+} as Record<string, any>
+
+function getCategoryIcon(id: string) {
+  return categoryIcons[id] || Folder
+}
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('zh-TW', {
@@ -24,12 +41,17 @@ function formatDate(d: string) {
   <RouterLink :to="`/blog/${slug}`" class="post-card glass">
     <div class="card-glow" />
     <div class="card-meta">
-      <span class="category-badge">{{ category }}</span>
+      <span class="category-badge">
+        <component :is="getCategoryIcon(categoryId)" :size="12" />
+        {{ category }}
+      </span>
       <span class="date">{{ formatDate(date) }}</span>
     </div>
     <h3 class="card-title">{{ title }}</h3>
     <div class="card-tags">
-      <span v-for="tag in tags" :key="tag" class="tag"># {{ tag }}</span>
+      <span v-for="tag in tags" :key="tag" class="tag">
+        <Tag :size="12" /> {{ tag }}
+      </span>
     </div>
     <span class="read-more">閱讀文章 <span class="arrow">→</span></span>
   </RouterLink>
@@ -52,7 +74,7 @@ function formatDate(d: string) {
 .post-card:hover {
   transform: translateY(-5px);
   border-color: var(--border-glow);
-  box-shadow: 0 12px 40px rgba(96, 165, 250, 0.12), 0 0 0 1px rgba(96,165,250,0.1);
+  box-shadow: 0 12px 40px rgba(96, 165, 250, 0.12), 0 0 0 1px rgba(96, 165, 250, 0.1);
   color: var(--text-primary);
 }
 
@@ -79,6 +101,9 @@ function formatDate(d: string) {
 }
 
 .category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -120,6 +145,9 @@ function formatDate(d: string) {
 }
 
 .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   font-size: 0.72rem;
   color: var(--text-muted);
 }

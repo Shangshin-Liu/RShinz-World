@@ -1,12 +1,28 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { usePosts } from '@/composables/usePosts'
+import { usePosts, taxonomyCategories, taxonomyTags } from '@/composables/usePosts'
 import PostCard from '@/components/blog/PostCard.vue'
+import { Code, BookOpen, Layers, Terminal, Coffee, Briefcase, Bug, Folder, Tag, Filter, X } from 'lucide-vue-next'
 
-const { posts, allTags, allCategories, searchQuery, activeTag, activeCategory, clearFilters } =
+const { posts, searchQuery, activeTag, activeCategory, clearFilters } =
   usePosts()
 
 const searchInput = ref('')
+const isFilterOpen = ref(false)
+
+const categoryIcons = {
+  'tech': Code,
+  'tutorial': BookOpen,
+  'architecture': Layers,
+  'devops': Terminal,
+  'life': Coffee,
+  'career': Briefcase,
+  'test': Bug
+} as Record<string, any>
+
+function getCategoryIcon(label: string) {
+  return categoryIcons[label] || Folder
+}
 
 function onSearch() {
   searchQuery.value = searchInput.value
@@ -38,56 +54,47 @@ function onClear() {
     <div class="container blog-body">
       <!-- Search & Filter -->
       <div class="search-bar">
-        <input
-          v-model="searchInput"
-          type="text"
-          placeholder="搜尋文章標題或標籤…"
-          class="search-input"
-          @input="onSearch"
-        />
+        <input v-model="searchInput" type="text" placeholder="搜尋文章標題或標籤…" class="search-input" @input="onSearch" />
+        <button class="btn filter-toggle" :class="{ 'active': isFilterOpen || activeCategory || activeTag }"
+          @click="isFilterOpen = !isFilterOpen">
+          <Filter :size="16" />
+          <span>篩選</span>
+          <span v-if="activeCategory || activeTag" class="filter-dot"></span>
+        </button>
         <button v-if="searchInput || activeTag || activeCategory" class="btn btn-ghost clear-btn" @click="onClear">
-          清除
+          <X :size="16" />
+          <span>清除</span>
         </button>
       </div>
 
-      <div class="filter-row">
-        <div class="filter-group">
-          <span class="filter-label">分類：</span>
-          <button
-            v-for="cat in allCategories"
-            :key="cat"
-            class="badge"
-            :class="{ active: activeCategory === cat }"
-            @click="setCategory(cat)"
-          >
-            {{ cat }}
-          </button>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">標籤：</span>
-          <button
-            v-for="tag in allTags"
-            :key="tag"
-            class="badge"
-            :class="{ active: activeTag === tag }"
-            @click="setTag(tag)"
-          >
-            # {{ tag }}
-          </button>
+      <div class="filter-wrapper" :class="{ 'is-open': isFilterOpen }">
+        <div class="filter-inner">
+          <div class="filter-row">
+            <div class="filter-group">
+              <span class="filter-label">分類：</span>
+              <button v-for="cat in taxonomyCategories" :key="cat.id" class="badge"
+                :class="{ active: activeCategory === cat.label }" @click="setCategory(cat.label)">
+                <component :is="getCategoryIcon(cat.id)" :size="14" />
+                {{ cat.label }}
+              </button>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">標籤：</span>
+              <button v-for="tag in taxonomyTags" :key="tag.id" class="badge"
+                :class="{ active: activeTag === tag.label }" @click="setTag(tag.label)">
+                <Tag :size="14" />
+                {{ tag.label }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Posts -->
       <div v-if="posts.length" class="posts-grid">
-        <PostCard
-          v-for="post in posts"
-          :key="post.slug"
-          :slug="post.slug"
-          :title="post.attributes.title"
-          :category="post.attributes.category"
-          :tags="post.attributes.tags"
-          :date="post.attributes.date"
-        />
+        <PostCard v-for="post in posts" :key="post.slug" :slug="post.slug" :categoryId="post.attributes.categoryId"
+          :title="post.attributes.title" :category="post.attributes.category" :tags="post.attributes.tags"
+          :date="post.attributes.date" />
       </div>
 
       <div v-else class="empty-state">
@@ -159,11 +166,71 @@ function onClear() {
   color: var(--text-muted);
 }
 
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1rem;
+  color: var(--text-secondary);
+  position: relative;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.filter-toggle:hover,
+.filter-toggle.active {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.filter-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg-default);
+}
+
+.clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+}
+
+.filter-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 1.5rem;
+}
+
+.filter-wrapper.is-open {
+  grid-template-rows: 1fr;
+  margin-bottom: 2.5rem;
+}
+
+.filter-inner {
+  overflow: hidden;
+}
+
 .filter-row {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 2.5rem;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .filter-group {

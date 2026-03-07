@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePosts } from '@/composables/usePosts'
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer.vue'
+import { Code, BookOpen, Layers, Terminal, Coffee, Briefcase, Bug, Folder, Tag } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,6 +11,20 @@ const { getPost } = usePosts()
 
 const slug = computed(() => route.params.slug as string)
 const post = computed(() => getPost(slug.value))
+
+const categoryIcons = {
+  'tech': Code,
+  'tutorial': BookOpen,
+  'architecture': Layers,
+  'devops': Terminal,
+  'life': Coffee,
+  'career': Briefcase,
+  'test': Bug
+} as Record<string, any>
+
+function getCategoryIcon(id: string) {
+  return categoryIcons[id] || Folder
+}
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('zh-TW', {
@@ -33,12 +48,17 @@ function goBack() {
       <!-- Header -->
       <header class="post-header">
         <div class="post-meta">
-          <span class="category-badge">{{ post.attributes.category }}</span>
+          <span class="category-badge">
+            <component :is="getCategoryIcon(post.attributes.categoryId)" :size="14" />
+            {{ post.attributes.category }}
+          </span>
           <span class="date">{{ formatDate(post.attributes.date) }}</span>
         </div>
         <h1 class="post-title">{{ post.attributes.title }}</h1>
         <div class="post-tags">
-          <span v-for="tag in post.attributes.tags" :key="tag" class="tag"># {{ tag }}</span>
+          <span v-for="tag in post.attributes.tags" :key="tag" class="tag">
+            <Tag :size="12" /> {{ tag }}
+          </span>
         </div>
       </header>
 
@@ -94,6 +114,9 @@ function goBack() {
 }
 
 .category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -125,6 +148,9 @@ function goBack() {
 }
 
 .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
